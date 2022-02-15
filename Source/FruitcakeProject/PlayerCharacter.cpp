@@ -7,6 +7,7 @@
 #include "Math/UnrealMathUtility.h" 
 #include "Components/InputComponent.h" 
 #include "AoeAttackController.h"
+#include "Projectiles.h"
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
@@ -34,6 +35,8 @@ APlayerCharacter::APlayerCharacter()
 	m_Player_Experience_Points = 0.f;
 
 	AOEAttackClass = AAoeAttackController::StaticClass();
+	ProjectileClass = AProjectiles::StaticClass();
+
 }
 
 // Called when the game starts or when spawned
@@ -92,6 +95,7 @@ void APlayerCharacter::MoveForwardMethod(float value)
 		const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
 		AddMovementInput(direction, value);
 	}
+
 }
 
 void APlayerCharacter::MoveRightMethod(float value)
@@ -199,7 +203,7 @@ void APlayerCharacter::FireAoeAtPlayer()
 
 void APlayerCharacter::FireABiggerAoe()
 {
-	if (AOEAttackClass)
+	if (ProjectileClass)
 	{
 
 		FVector SpawnLocation;
@@ -207,7 +211,7 @@ void APlayerCharacter::FireABiggerAoe()
 		//	GetActorEyesViewPoint(CameraLocation, CameraRotation);
 
 
-		SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z - 100);
+		SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z );
 		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
 		MuzzleOffset.Set(100.0f, 40.0f, 0.0f);
 
@@ -225,13 +229,13 @@ void APlayerCharacter::FireABiggerAoe()
 			SpawnParams.Instigator = GetInstigator();
 
 			// Spawn the projectile at the muzzle.
-			AAoeAttackController* AOECircle = World->SpawnActor<AAoeAttackController>(AOEAttackClass, SpawnLocation, FRotator(0.f, 0.f, 0.f), SpawnParams);
+			AProjectiles* AOECircle = World->SpawnActor<AProjectiles>(ProjectileClass, SpawnLocation, FRotator(0.f, 0.f, 0.f), SpawnParams);
 
 			if (AOECircle)
 			{
 				// Set the projectile's initial trajectory.
 				FVector LaunchDirection = MuzzleRotation.Vector();
-				AOECircle->FireAtLocation(LaunchDirection, 5.f);
+				AOECircle->FireInDirection(LaunchDirection, 1.f);
 				// remove energy
 			}
 

@@ -17,22 +17,8 @@ AAoeAttackController::AAoeAttackController()
 		// Set collision box radius.
 		CollisionComponent->InitSphereRadius(500.0f);
 		// Set the root component to be newly created component.
-		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
-
 		RootComponent = CollisionComponent;
 	}
-
-	//if (!BoxCollisionComponent)
-	//{
-	//	// Set Collsion box to be sphere.
-	//	BoxCollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
-	//	// Set collision box radius.
-	//	BoxCollisionComponent->SetBoxExtent(FVector(250.f, 250.f, 40.25f));
-	//	// Set the root component to be newly created component.
-	//	BoxCollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
-	//	RootComponent = BoxCollisionComponent;
-	//}
-
 
 	if (!ProjectileMovementComponent)
 	{
@@ -55,7 +41,7 @@ AAoeAttackController::AAoeAttackController()
 			ProjectileMeshComponent->SetStaticMesh(Mesh.Object);
 		}
 		// set how long projectile will last in seconds, after this amount of time, projectile is destroyed
-		InitialLifeSpan = 40.75f;
+		InitialLifeSpan = 2.6f;
 	}
 
 	// Load material for projectile from unreal files
@@ -65,21 +51,21 @@ AAoeAttackController::AAoeAttackController()
 		ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
 	}
 
-	static ConstructorHelpers::FObjectFinder<UMaterial>BlueMaterial(TEXT("Material'/Game/Fruitcake_Game/Materials/Blue.Blue''"));
+	static ConstructorHelpers::FObjectFinder<UMaterial>BlueMaterial(TEXT("Material'/Game/Fruitcake_Game/Materials/Blue.Blue'"));
 	if (BlueMaterial.Succeeded())
 	{
 		BlueMaterialInstance = UMaterialInstanceDynamic::Create(BlueMaterial.Object, ProjectileMeshComponent);
 	}
 	ProjectileMeshComponent->SetMaterial(0, ProjectileMaterialInstance);
 
-	ProjectileMeshComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
+	ProjectileMeshComponent->BodyInstance.SetCollisionProfileName(TEXT("EnemyAOE"));
 
 	// Set size of projectile
 	ProjectileMeshComponent->SetRelativeScale3D(FVector(10.f, 10.f, .05f));
 	ProjectileMeshComponent->SetupAttachment(RootComponent);
 
 	// Event called when component hits something.
-	CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
+	CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("EnemyAOE"));
 
 
 }
@@ -88,11 +74,9 @@ AAoeAttackController::AAoeAttackController()
 void AAoeAttackController::BeginPlay()
 {
 	Super::BeginPlay();
-	//	ProjectileMeshComponent->SetMaterial(0, BlueMaterialInstance);
 	PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
-	GetWorldTimerManager().SetTimer(AOEActivateTimer, this, &AAoeAttackController::ActivateAOE, 10.5f, false);
-
+	GetWorldTimerManager().SetTimer(AOEActivateTimer, this, &AAoeAttackController::ActivateAOE, 2.4f, false);
 
 }
 
@@ -100,16 +84,6 @@ void AAoeAttackController::BeginPlay()
 void AAoeAttackController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-
-
-
-	if (isPlayerHit)
-	{
-
-	}
-
-
 }
 
 void AAoeAttackController::FireAtLocation(const FVector& SpawnLoaction, const float& AoeSize)
@@ -130,35 +104,10 @@ void AAoeAttackController::ActivateAOE()
 {
 	ProjectileMeshComponent->SetMaterial(0, BlueMaterialInstance);
 
-	ProjectileMeshComponent->BodyInstance.SetCollisionProfileName(TEXT("AOE"));
-
-	// Event called when component hits something.
-	CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("AOE"));
-
-	if (CollisionComponent->IsOverlappingActor(PlayerCharacter) && ProjectileMeshComponent->BodyInstance.GetCollisionProfileName() == TEXT("AOE"))
+	if (CollisionComponent->IsOverlappingActor(PlayerCharacter))
 	{
 		PlayerCharacter->ReducePlayerHealth();
-		isPlayerHit = true;
 	}
 }
 
-void AAoeAttackController::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
-{
 
-}
-
-void AAoeAttackController::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (ProjectileMeshComponent->BodyInstance.GetCollisionProfileName() == TEXT("AOE"))
-	{
-		PlayerCharacter->Destroy();
-	}
-}
-
-void AAoeAttackController::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	if (PlayerCharacter)
-	{
-		PlayerCharacter->Destroy();
-	}
-}

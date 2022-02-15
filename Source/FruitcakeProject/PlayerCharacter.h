@@ -28,7 +28,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "AOE")
 		TSubclassOf<class AAoeAttackController> AOEAttackClass;
 
-
+	// AOE attack spawn class (Vector)
+	UPROPERTY(EditDefaultsOnly, Category = "AOE")
+		TSubclassOf<class AProjectiles> ProjectileClass;
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
