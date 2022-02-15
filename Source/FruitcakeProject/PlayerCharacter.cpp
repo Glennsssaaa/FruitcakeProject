@@ -146,7 +146,7 @@ void APlayerCharacter::DashMethod()
 	const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
 
 	// launch character forward
-	LaunchCharacter(direction * 1500, false, false);
+	LaunchCharacter(direction * 750, false, false);
 
 	// set timer, this is how long before the player can dash again (Half a second)
 	GetWorldTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::ResetDashMethod, .5f, false);

@@ -101,11 +101,11 @@ void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming)
 	ProjectileMovementComponent->HomingTargetComponent = PlayerCharacter->GetRootComponent();
 
 	//// Once projecitle is fired, check to see if projectile was set to homing
-	//if (isHoming)
-	//{
-	//	// if set to homing, wait half a second before targetting enemy
-	//	GetWorldTimerManager().SetTimer(ProjectileTimerHandle, this, &AProjectiles::HomingOnTarget, .5f, false);
-	//}
+	if (isHoming)
+	{
+		// if set to homing, wait half a second before targetting enemy
+		GetWorldTimerManager().SetTimer(ProjectileTimerHandle, this, &AProjectiles::HomingOnTarget, .5f, false);
+	}
 }
 
 
@@ -114,6 +114,7 @@ void AProjectiles::HomingOnTarget()
 {
 	// sets target to enemy collision component
 		// sets target to enemy collision component
+	ProjectileMovementComponent->bIsHomingProjectile = false;
 }
 
 void AProjectiles::GetTarget()
