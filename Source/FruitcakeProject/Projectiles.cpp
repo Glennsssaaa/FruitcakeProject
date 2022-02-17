@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "Projectiles.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "PlayerCharacter.h"
 #include "Engine/Engine.h"
-#include "Projectiles.h"
 
 // Sets default values
 AProjectiles::AProjectiles()
