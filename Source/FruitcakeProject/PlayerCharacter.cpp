@@ -89,10 +89,12 @@ void APlayerCharacter::MoveForwardMethod(float value)
 	// W and S Movement
 	if (Controller != NULL && value != 0)
 	{
-		const FRotator Rotation = GetControlRotation();
+		const FRotator Rotation = m_Cam_Rotate;
 		const FRotator Yaw(0, Rotation.Yaw, 0);
+
 		// gets forward vector
 		const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
+
 		AddMovementInput(direction, value);
 	}
 
@@ -103,8 +105,9 @@ void APlayerCharacter::MoveRightMethod(float value)
 	// A and D movement
 	if (Controller != NULL && value != 0)
 	{
-		const FRotator Rotation = GetControlRotation();
+		const FRotator Rotation = m_Cam_Rotate;
 		const FRotator Yaw(0, Rotation.Yaw, 0);
+
 		// gets right vector
 		const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::Y);
 

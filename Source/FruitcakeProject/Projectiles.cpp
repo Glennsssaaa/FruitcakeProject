@@ -44,7 +44,6 @@ AProjectiles::AProjectiles()
 		ProjectileMovementComponent->bIsHomingProjectile = true;
 		// set how quickly projectile will home in
 		ProjectileMovementComponent->HomingAccelerationMagnitude = 3000.f;
-
 	}
 	// mesh component set up
 	if (!ProjectileMeshComponent)

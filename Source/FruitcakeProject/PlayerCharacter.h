@@ -99,6 +99,10 @@ protected:
 		float m_Player_Experience_Points = 0.f;
 	float m_Max_Experience = 1.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FRotator m_Cam_Rotate;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool m_Can_Move;
 
 };
