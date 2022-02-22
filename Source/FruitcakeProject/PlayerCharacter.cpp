@@ -16,6 +16,7 @@ APlayerCharacter::APlayerCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// stuff that you should do
 	m_Look_Rate = 45.f;
 	m_Turn_Rate = 45.f;
 
@@ -80,6 +81,10 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	// AOE test
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::FireAoeAtPlayer);
 	PlayerInputComponent->BindAction("FireBig", IE_Pressed, this, &APlayerCharacter::FireABiggerAoe);
+
+	// PERSPECTIVE SWITCHING 
+	PlayerInputComponent->BindAction("SwitchPerspective", IE_Pressed, this, &APlayerCharacter::SwitchPerspectiveMethod);
+
 }
 
 
@@ -167,6 +172,11 @@ void APlayerCharacter::DashMethod()
 void APlayerCharacter::ResetDashMethod()
 {
 	is_Dashing = false;
+}
+
+void APlayerCharacter::SwitchPerspectiveMethod()
+{
+	// do switch perspective fraser 
 }
 
 void APlayerCharacter::FireAoeAtPlayer()

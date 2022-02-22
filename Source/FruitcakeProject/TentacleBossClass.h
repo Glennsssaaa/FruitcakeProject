@@ -37,6 +37,11 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = BossNum1)
 		UBoxComponent* RightWeakPoints[6];
 
+	UPROPERTY(VisibleDefaultsOnly, Category = BossNum1)
+		UStaticMeshComponent* FlowerMeshComponent;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = BossNum1)
+		UBoxComponent* FlowerCollisionComponent;
 	// Boss Health
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float m_BossNum1_Health_Points = 1.f;

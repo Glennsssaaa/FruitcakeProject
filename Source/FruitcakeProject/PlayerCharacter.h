@@ -58,6 +58,10 @@ public:
 	UFUNCTION()
 		void ResetDashMethod();
 
+	/* --------- Switch Persepctive ---------- */
+	UFUNCTION()
+		void SwitchPerspectiveMethod();
+
 	/* --------- Test Functions ---------- */
 	UFUNCTION()
 		void FireAoeAtPlayer();
@@ -65,6 +69,8 @@ public:
 	UFUNCTION()
 		void FireABiggerAoe();
 	UFUNCTION()
+
+
 
 
 		void ReducePlayerHealth();

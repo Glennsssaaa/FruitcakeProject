@@ -5,6 +5,7 @@
 #include "Engine/Engine.h"
 #include "Projectiles.h"
 
+
 // Sets default values
 AProjectiles::AProjectiles()
 {
@@ -122,17 +123,10 @@ void AProjectiles::GetTarget()
 
 void AProjectiles::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
-	//if (OtherActor != this)
-	//{
-	//	PlayerCharacter->ReducePlayerHealth();
-	//	Destroy();
-	//}
-
-	if (OtherComponent->ComponentHasTag((FName("PlayerAttack"))))
+	if (OtherActor != this)
 	{
-		ProjectileMovementComponent->Velocity = ProjectileMovementComponent->Velocity *=-1;
+		PlayerCharacter->ReducePlayerHealth();
 		Destroy();
-
 	}
 }
 

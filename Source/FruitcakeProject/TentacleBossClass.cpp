@@ -9,18 +9,38 @@ ATentacleBossClass::ATentacleBossClass()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	if (!LeftWeakPoints[0])
+	/* -------- Boss Meshes Setup --------*/
+
+	// Using placeholder cube meshes 
+
+	if (!FlowerMeshComponent)
 	{
-	//	// Set Collsion box to be sphere.
-	//	LeftWeakPoints[0] = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftCollision"));
-	//	// Set collision box radius.
-	//	LeftWeakPoints[0]->SetBoxExtent(FVector(16.f, 64.f, 64.f));
-	//	LeftWeakPoints[0]->SetRelativeLocation(FVector(10.f, 10.f, 10.f));
-	//	// Set the root component to be newly created component.
-
-	////	LeftWeakPoints[0]->BodyInstance.SetCollisionProfileName(TEXT("Enemy"));
-
+		// sets mesh of projectile to basic sphere mesh, loaded from unreal engine files
+		FlowerMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProjectileMeshComponent"));
+		// placeholder cube mesh
+		static ConstructorHelpers::FObjectFinder<UStaticMesh>Mesh(TEXT("StaticMesh'/Game/Geometry/Meshes/1M_Cube.1M_Cube'"));
+		if (Mesh.Succeeded())
+		{
+			FlowerMeshComponent->SetStaticMesh(Mesh.Object);
+		}
 	}
+
+	/* -------- Boss Collision Components Setup --------*/
+		// collision component set up
+	if (!FlowerCollisionComponent)
+	{
+		// Set Collsion box to be sphere.
+		FlowerCollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("FlowerCollision"));
+		FlowerCollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("nothing"));
+
+		// Set collision box radius.
+		FlowerCollisionComponent->SetBoxExtent(FVector(60.f, 60.f, 60.f));
+		// Set the root component to be newly created component.
+		RootComponent = FlowerCollisionComponent;
+	}
+
+	FlowerMeshComponent->SetupAttachment(RootComponent);
+
 }
 
 // Called when the game starts or when spawned
