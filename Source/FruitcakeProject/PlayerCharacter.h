@@ -103,6 +103,6 @@ protected:
 		FRotator m_Cam_Rotate;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool m_Can_Move;
+		bool m_Can_Move = true;
 
 };

@@ -122,10 +122,17 @@ void AProjectiles::GetTarget()
 
 void AProjectiles::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (OtherActor != this)
+	//if (OtherActor != this)
+	//{
+	//	PlayerCharacter->ReducePlayerHealth();
+	//	Destroy();
+	//}
+
+	if (OtherComponent->ComponentHasTag((FName("PlayerAttack"))))
 	{
-		PlayerCharacter->ReducePlayerHealth();
+		ProjectileMovementComponent->Velocity = ProjectileMovementComponent->Velocity *=-1;
 		Destroy();
+
 	}
 }
 

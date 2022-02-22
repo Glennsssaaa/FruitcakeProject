@@ -74,8 +74,11 @@ AAoeAttackController::AAoeAttackController()
 void AAoeAttackController::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Store Player Character in the pointer
 	PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
+	// AOE Activation Timer - CHANGE NEEDED (Need to make the time customisable for different types of attacks)
 	GetWorldTimerManager().SetTimer(AOEActivateTimer, this, &AAoeAttackController::ActivateAOE, 2.4f, false);
 
 }
@@ -86,9 +89,12 @@ void AAoeAttackController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+
 void AAoeAttackController::FireAtLocation(const FVector& SpawnLoaction, const float& AoeSize)
 {
 	// Sets velocity vector to be the direction multipled by the initial speed of the projectile
+
+	// SpawnLocation = AOE Spawn Location, to make AOE spawn on ground, spawn at ActorLocation - 90
 	CollisionComponent->SetSphereRadius(AoeSize * 50);
 	ProjectileMeshComponent->SetRelativeScale3D(FVector(AoeSize, AoeSize, .05f));
 
