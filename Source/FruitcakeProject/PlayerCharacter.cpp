@@ -16,6 +16,7 @@ APlayerCharacter::APlayerCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// stuff that you should do
 	m_Look_Rate = 45.f;
 	m_Turn_Rate = 45.f;
 
@@ -43,6 +44,7 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	m_Can_Move = true;
 }
 
 // Called every frame
@@ -79,6 +81,10 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	// AOE test
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::FireAoeAtPlayer);
 	PlayerInputComponent->BindAction("FireBig", IE_Pressed, this, &APlayerCharacter::FireABiggerAoe);
+
+	// PERSPECTIVE SWITCHING 
+	PlayerInputComponent->BindAction("SwitchPerspective", IE_Pressed, this, &APlayerCharacter::SwitchPerspectiveMethod);
+
 }
 
 
@@ -89,14 +95,18 @@ void APlayerCharacter::MoveForwardMethod(float value)
 	// W and S Movement
 	if (Controller != NULL && value != 0)
 	{
-		const FRotator Rotation = m_Cam_Rotate;
-		const FRotator Yaw(0, Rotation.Yaw, 0);
+		if (m_Can_Move)
+		{
+			const FRotator Rotation = m_Cam_Rotate;
+			const FRotator Yaw(0, Rotation.Yaw, 0);
 
-		// gets forward vector
-		const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
+			// gets forward vector
+			const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
 
-		AddMovementInput(direction, value);
+			AddMovementInput(direction, value);
+		}
 	}
+
 
 }
 
@@ -105,13 +115,16 @@ void APlayerCharacter::MoveRightMethod(float value)
 	// A and D movement
 	if (Controller != NULL && value != 0)
 	{
-		const FRotator Rotation = m_Cam_Rotate;
-		const FRotator Yaw(0, Rotation.Yaw, 0);
+		if (m_Can_Move)
+		{
+			const FRotator Rotation = m_Cam_Rotate;
+			const FRotator Yaw(0, Rotation.Yaw, 0);
 
-		// gets right vector
-		const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::Y);
+			// gets right vector
+			const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::Y);
 
-		AddMovementInput(direction, value);
+			AddMovementInput(direction, value);
+		}
 	}
 }
 
@@ -159,6 +172,11 @@ void APlayerCharacter::DashMethod()
 void APlayerCharacter::ResetDashMethod()
 {
 	is_Dashing = false;
+}
+
+void APlayerCharacter::SwitchPerspectiveMethod()
+{
+	// do switch perspective fraser 
 }
 
 void APlayerCharacter::FireAoeAtPlayer()

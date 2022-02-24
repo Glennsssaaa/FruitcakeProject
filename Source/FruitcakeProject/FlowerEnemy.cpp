@@ -116,12 +116,7 @@ void AFlowerEnemy::FireAoeAtPlayer()
 	{
 		FVector SpawnLocation;
 		FRotator CameraRotation;
-		//	GetActorEyesViewPoint(CameraLocation, CameraRotation);
-
-
 		SpawnLocation = FVector(PlayerCharacter->GetActorLocation().X, PlayerCharacter->GetActorLocation().Y, PlayerCharacter->GetActorLocation().Z - 90.f);
-		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
-		MuzzleOffset.Set(100.0f, 40.0f, 0.0f);
 
 		// set rotation of projectile to camera rotation
 		FRotator MuzzleRotation = CameraRotation;
@@ -140,7 +135,7 @@ void AFlowerEnemy::FireAoeAtPlayer()
 			{
 				// Set the projectile's initial trajectory.
 				FVector LaunchDirection = MuzzleRotation.Vector();
-				Projectile->FireAtLocation(LaunchDirection, 3);
+				Projectile->FireAtLocation(LaunchDirection, 3.f);
 			}
 
 		}
@@ -149,7 +144,7 @@ void AFlowerEnemy::FireAoeAtPlayer()
 
 void AFlowerEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherComp->BodyInstance.GetCollisionProfileName() == TEXT("PlayerAttack") || OtherComp->GetCollisionProfileName() == TEXT("PlayerAttack") || OtherComp->ComponentHasTag(FName("PlayerAttack")))
+	if (OtherComp->ComponentHasTag(FName("PlayerAttack")))
 	{
 		Destroy();
 	}
