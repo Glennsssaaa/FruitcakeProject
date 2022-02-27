@@ -2,8 +2,6 @@
 
 
 #include "PlayerCharacter.h"
-#include "Camera/CameraComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "Math/UnrealMathUtility.h" 
 #include "Components/InputComponent.h" 
 #include "AoeAttackController.h"
@@ -38,6 +36,24 @@ APlayerCharacter::APlayerCharacter()
 	AOEAttackClass = AAoeAttackController::StaticClass();
 	ProjectileClass = AProjectiles::StaticClass();
 
+	if (!CameraBoom)
+	{
+		CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+		CameraBoom->TargetArmLength = 0.f;
+		CameraBoom->bInheritPitch = false;
+		CameraBoom->bInheritRoll = false;
+		CameraBoom->bInheritYaw = false;
+
+		CameraBoom->SetupAttachment(RootComponent);
+	}
+
+	if (!Camera)
+	{
+		Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+
+		Camera->SetupAttachment(CameraBoom);
+	}
+
 }
 
 // Called when the game starts or when spawned
@@ -52,6 +68,26 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 //	SetActorRotation(GetActorRotation() += FRotator(1.f));
+
+	if (!UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 0.5f))
+	{
+		float Rotation_Step = m_Rotation_Speed * DeltaTime;
+		if (m_Target_Angle < m_Rotation_Angle)
+		{
+			Rotation_Step *= -1;
+		}
+
+		m_Rotation_Angle += Rotation_Step;
+
+		FVector New_Offset = FVector(cosf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * 1000.f, sinf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * 1000.f, 1000.f);
+		CameraBoom->TargetOffset = New_Offset;
+		CameraBoom->SetRelativeRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation() + New_Offset, GetActorLocation()));
+		//cameraBoom.setRelativeRotation(FindLookAtRotation(cameraBoom.GetSocketLocation + New_Offset, GetActorLocation()));
+	}
+	else
+	{
+		m_Rotation_Angle = m_Target_Angle;
+	}
 }
 
 // Called to bind functionality to input
@@ -73,6 +109,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &APlayerCharacter::LookUpRateMethod);
 
+	// PERSPECTIVE SWITCHING 
+	PlayerInputComponent->BindAxis("SwitchPerspective", this, &APlayerCharacter::SwitchPerspectiveMethod);
+
 	/* ---------- ACTION MAPPINGS ----------*/
 
 	// DASHING
@@ -81,9 +120,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	// AOE test
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::FireAoeAtPlayer);
 	PlayerInputComponent->BindAction("FireBig", IE_Pressed, this, &APlayerCharacter::FireABiggerAoe);
-
-	// PERSPECTIVE SWITCHING 
-	PlayerInputComponent->BindAction("SwitchPerspective", IE_Pressed, this, &APlayerCharacter::SwitchPerspectiveMethod);
 
 }
 
@@ -148,7 +184,7 @@ void APlayerCharacter::DashInputMethod()
 		m_Player_Energy_Points -= 0.05f;
 
 		// shoot player up first to prevent collision with floor during dash
-		LaunchCharacter(FVector(0.f, 0.f, 300.f), false, false);
+		//LaunchCharacter(FVector(0.f, 0.f, 300.f), false, false);
 
 		// set a timer before next function to prevent forward movement from happening too soon
 		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::DashMethod, 0.1f, false);
@@ -162,21 +198,32 @@ void APlayerCharacter::DashMethod()
 	const FRotator Yaw(0, Rotation.Yaw, 0);
 	const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
 
+	//disable friction while dashing
+	GetCharacterMovement()->BrakingDecelerationWalking = 0.f;
+	GetCharacterMovement()->BrakingFrictionFactor = 0.f;
+
 	// launch character forward
-	LaunchCharacter(direction * 750, false, false);
+	LaunchCharacter(direction * 1000, false, true);
 
 	// set timer, this is how long before the player can dash again (Half a second)
-	GetWorldTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::ResetDashMethod, .5f, false);
+	GetWorldTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::ResetDashMethod, .25f, false);
 }
 
 void APlayerCharacter::ResetDashMethod()
 {
 	is_Dashing = false;
+	//enable friction when dash stops
+	GetCharacterMovement()->BrakingDecelerationWalking = 2048.f;
+	GetCharacterMovement()->BrakingFrictionFactor = 2.f;
 }
 
-void APlayerCharacter::SwitchPerspectiveMethod()
+void APlayerCharacter::SwitchPerspectiveMethod(float value)
 {
-	// do switch perspective fraser 
+	// add axis value (E = 90, Q = -90) to target angle
+	if (UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 0.1f))
+	{
+		m_Target_Angle += value;
+	}
 }
 
 void APlayerCharacter::FireAoeAtPlayer()
