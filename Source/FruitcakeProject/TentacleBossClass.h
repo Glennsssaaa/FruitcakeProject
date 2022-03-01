@@ -29,7 +29,7 @@ public:
 		void DealDamageMethod(float damage_amount);
 
 protected:
-	// Box collision component.
+	/* ------ Weak Point Collision Points ------*/
 	UPROPERTY(VisibleDefaultsOnly, Category = BossNum1)
 		UBoxComponent* LeftWeakPoints[6];
 
@@ -38,10 +38,20 @@ protected:
 		UBoxComponent* RightWeakPoints[6];
 
 	UPROPERTY(VisibleDefaultsOnly, Category = BossNum1)
+		UBoxComponent* FlowerCollisionComponent;
+
+	/* ------ Boss Static Mesh Components ------*/
+
+	// Main Flower Point, attacked to damage boss
+	UPROPERTY(VisibleDefaultsOnly, Category = BossNum1)
 		UStaticMeshComponent* FlowerMeshComponent;
 
+	// Left and Right Large Vines
 	UPROPERTY(VisibleDefaultsOnly, Category = BossNum1)
-		UBoxComponent* FlowerCollisionComponent;
+		UStaticMeshComponent* LeftVineMeshComponent;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = BossNum1)
+		UStaticMeshComponent* RighttVineMeshComponent;
 	// Boss Health
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float m_BossNum1_Health_Points = 1.f;

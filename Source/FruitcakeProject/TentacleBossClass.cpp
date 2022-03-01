@@ -9,6 +9,22 @@ ATentacleBossClass::ATentacleBossClass()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+
+	/* -------- Boss Collision Components Setup --------*/
+	// collision component set up
+	if (!FlowerCollisionComponent)
+	{
+		// Set Collsion box to be sphere.
+		FlowerCollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("FlowerCollision"));
+		FlowerCollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("nothing"));
+
+		// Set collision box radius.
+		FlowerCollisionComponent->SetBoxExtent(FVector(120.f, 120.f, 120.f));
+		// Set the root component to be newly created component.
+	//	RootComponent = FlowerCollisionComponent;
+	}
+
+
 	/* -------- Boss Meshes Setup --------*/
 
 	// Using placeholder cube meshes 
@@ -25,21 +41,9 @@ ATentacleBossClass::ATentacleBossClass()
 		}
 	}
 
-	/* -------- Boss Collision Components Setup --------*/
-		// collision component set up
-	if (!FlowerCollisionComponent)
-	{
-		// Set Collsion box to be sphere.
-		FlowerCollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("FlowerCollision"));
-		FlowerCollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("nothing"));
-
-		// Set collision box radius.
-		FlowerCollisionComponent->SetBoxExtent(FVector(60.f, 60.f, 60.f));
-		// Set the root component to be newly created component.
-		RootComponent = FlowerCollisionComponent;
-	}
 
 	FlowerMeshComponent->SetupAttachment(RootComponent);
+	FlowerMeshComponent->SetRelativeScale3D(FVector(2.f, 2.f, 2.f));
 
 }
 
