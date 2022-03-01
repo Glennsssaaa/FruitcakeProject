@@ -59,9 +59,19 @@ AProjectiles::AProjectiles()
 		// set how long projectile will last in seconds, after this amount of time, projectile is destroyed
 		InitialLifeSpan = 3.f;
 	}
+	//point light set up
+	if (!PointLightComponent)
+	{
+		PointLightComponent = CreateDefaultSubobject<UPointLightComponent>(TEXT("PointLightComponent"));
+
+		PointLightComponent->SetupAttachment(RootComponent);
+		PointLightComponent->SetLightColor(FLinearColor::Red);
+		PointLightComponent->SetIndirectLightingIntensity(10.f);
+		PointLightComponent->Activate();
+	}
 
 	// Load material for projectile from unreal files
-	static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("Material'/Game/Fruitcake_Game/Materials/Blue.Blue'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("Material'/Game/Fruitcake_Game/Materials/ProjectileM.ProjectileM'"));
 	if (Material.Succeeded())
 	{
 		ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
