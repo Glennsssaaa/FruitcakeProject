@@ -28,7 +28,7 @@ AFlowerEnemy::AFlowerEnemy()
 	{
 		// sets mesh of projectile to basic sphere mesh, loaded from unreal engine files
 		FlowerEnemyMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProjectileMeshComponent"));
-		static ConstructorHelpers::FObjectFinder<UStaticMesh>Mesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
+		static ConstructorHelpers::FObjectFinder<UStaticMesh>Mesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube'"));
 		if (Mesh.Succeeded())
 		{
 			FlowerEnemyMeshComponent->SetStaticMesh(Mesh.Object);
