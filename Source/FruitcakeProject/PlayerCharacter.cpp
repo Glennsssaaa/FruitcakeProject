@@ -4,6 +4,7 @@
 #include "PlayerCharacter.h"
 #include "Math/UnrealMathUtility.h" 
 #include "Components/InputComponent.h" 
+#include "Components/CapsuleComponent.h"
 #include "AoeAttackController.h"
 #include "Projectiles.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -54,6 +55,8 @@ APlayerCharacter::APlayerCharacter()
 		Camera->SetupAttachment(CameraBoom);
 	}
 
+	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
+
 }
 
 // Called when the game starts or when spawned
@@ -69,7 +72,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 //	SetActorRotation(GetActorRotation() += FRotator(1.f));
 
-	if (!UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 0.5f))
+	if (!UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 1.0f))
 	{
 		float Rotation_Step = m_Rotation_Speed * DeltaTime;
 		if (m_Target_Angle < m_Rotation_Angle)
@@ -204,9 +207,6 @@ void APlayerCharacter::DashMethod()
 
 	// launch character forward
 	LaunchCharacter(direction * 1000, false, true);
-
-	// set timer, this is how long before the player can dash again (Half a second)
-	GetWorldTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::ResetDashMethod, .25f, false);
 }
 
 void APlayerCharacter::ResetDashMethod()
@@ -315,4 +315,23 @@ void APlayerCharacter::FireABiggerAoe()
 void APlayerCharacter::ReducePlayerHealth()
 {
 	m_Player_Health_Points -= 0.1f;
+}
+
+void APlayerCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (is_Dashing && Cast<UStaticMeshComponent>(OtherComp) != NULL)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Red, TEXT("hit"));
+	}
+}
+
+void APlayerCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (is_Dashing && Cast<UStaticMeshComponent>(OtherComponent) != NULL)
+	{
+		//GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Red, TEXT("hit"));
+
+		// set timer, this is how long before the player can dash again (Half a second)
+		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::ResetDashMethod, .25f, false);
+	}
 }
