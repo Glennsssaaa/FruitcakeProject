@@ -56,7 +56,6 @@ ARadishEnemy::ARadishEnemy()
 	SightSphere->OnComponentEndOverlap.AddDynamic(this, &ARadishEnemy::OnTriggerEnd);
 
 	bHostile = false;
-	MovementSpeed = 500.f;
 }
 
 // Called when the game starts or when spawned
@@ -87,8 +86,6 @@ void ARadishEnemy::Tick(float DeltaTime)
 		GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, TEXT("follow"));
 		FVector Direction = PlayerCharacter->GetActorLocation() - GetActorLocation();
 		Direction.Normalize();
-
-		Direction = Direction * DeltaTime * MovementSpeed;
 
 		SetActorLocation(GetActorLocation() + Direction);
 	}

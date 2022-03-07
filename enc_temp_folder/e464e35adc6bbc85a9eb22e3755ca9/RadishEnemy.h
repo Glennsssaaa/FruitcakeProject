@@ -63,9 +63,6 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
 		bool bHostile;
 
-	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
-		float MovementSpeed;
-
 	// Radish projectiles spawn class (Vector)
 	UPROPERTY(EditDefaultsOnly, Category = "RadishEnemy")
 		TSubclassOf<class AProjectiles> RadishProjectiles;

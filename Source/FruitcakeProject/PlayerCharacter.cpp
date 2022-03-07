@@ -82,10 +82,10 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 		m_Rotation_Angle += Rotation_Step;
 
+		//Vector(X = cos(angle) * radius, Y = sin(angle) * radius, Z = height)
 		FVector New_Offset = FVector(cosf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * 1000.f, sinf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * 1000.f, 1000.f);
 		CameraBoom->TargetOffset = New_Offset;
 		CameraBoom->SetRelativeRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation() + New_Offset, GetActorLocation()));
-		//cameraBoom.setRelativeRotation(FindLookAtRotation(cameraBoom.GetSocketLocation + New_Offset, GetActorLocation()));
 	}
 	else
 	{
