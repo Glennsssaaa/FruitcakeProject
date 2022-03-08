@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/Pawn.h"
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/MovementComponent.h"
@@ -11,7 +12,7 @@
 #include "RadishEnemy.generated.h"
 
 UCLASS()
-class FRUITCAKEPROJECT_API ARadishEnemy : public AActor
+class FRUITCAKEPROJECT_API ARadishEnemy : public APawn
 {
 	GENERATED_BODY()
 	
@@ -40,6 +41,9 @@ public:
 		void OnTriggerBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 		void OnTriggerEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+		void SetStunned();
 protected:
 
 	// pointer to player character
@@ -47,21 +51,29 @@ protected:
 
 	FTimerHandle AttackTimerHandle;
 	FTimerHandle AoeAttackTimerHandle;
+	FTimerHandle StunTimerHandle;
 
 	//Sphere collision component.
 	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
 		UBoxComponent* CollisionComponent;
 	 
-	// Sphere Static Mesh
+	// Cylinder Body Static Mesh
 	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
 		UStaticMeshComponent* RadishEnemyMeshComponent;
+
+	//Sphere Weak Point Static Mesh
+	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
+		UStaticMeshComponent* WeakPointMeshComponent;
 
 	// Sphere range detection
 	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
 		USphereComponent* SightSphere;
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
+	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
 		bool bHostile;
+
+	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
+		bool bStunned;
 
 	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
 		float MovementSpeed;
@@ -78,4 +90,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RadishEnemy")
 		FVector MuzzleOffset;
 
+	//test mats
+	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
+		UMaterial* default_material;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
+		UMaterial* red_material;
 };

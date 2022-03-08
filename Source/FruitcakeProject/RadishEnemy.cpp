@@ -25,7 +25,7 @@ ARadishEnemy::ARadishEnemy()
 	if (!RadishEnemyMeshComponent)
 	{
 		// sets mesh of projectile to basic sphere mesh, loaded from unreal engine files
-		RadishEnemyMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProjectileMeshComponent"));
+		RadishEnemyMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BodyMeshComponent"));
 		static ConstructorHelpers::FObjectFinder<UStaticMesh>Mesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder'"));
 		if (Mesh.Succeeded())
 		{
@@ -37,6 +37,24 @@ ARadishEnemy::ARadishEnemy()
 	}
 	RadishEnemyMeshComponent->SetupAttachment(RootComponent);
 	RadishEnemyMeshComponent->SetCollisionProfileName(TEXT("Enemy"));
+
+	if (!WeakPointMeshComponent)
+	{
+		// sets mesh of projectile to basic sphere mesh, loaded from unreal engine files
+		WeakPointMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeakPointMeshComponent"));
+		static ConstructorHelpers::FObjectFinder<UStaticMesh>Mesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
+		if (Mesh.Succeeded())
+		{
+			WeakPointMeshComponent->SetStaticMesh(Mesh.Object);
+			static ConstructorHelpers::FObjectFinder<UMaterial>Mat(TEXT("Material'/Game/Fruitcake_Game/Materials/ProjectileM.ProjectileM'"));
+			WeakPointMeshComponent->SetMaterial(0, Mat.Object);
+		}
+		WeakPointMeshComponent->SetWorldLocation(FVector(-10, 0, -50));
+		// set how long projectile will last in seconds, after this amount of time, projectile is destroyed
+		//InitialLifeSpan = 3.f;
+	}
+	WeakPointMeshComponent->SetupAttachment(RootComponent);
+	WeakPointMeshComponent->SetCollisionProfileName(TEXT("Enemy"));
 
 	//sight sphere component set up
 	if (!SightSphere)
@@ -56,7 +74,14 @@ ARadishEnemy::ARadishEnemy()
 	SightSphere->OnComponentEndOverlap.AddDynamic(this, &ARadishEnemy::OnTriggerEnd);
 
 	bHostile = false;
+	bStunned = false;
 	MovementSpeed = 500.f;
+
+	static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("Material'/Game/StarterContent/Materials/M_Basic_Wall.M_Basic_Wall'"));
+	default_material = Material.Object;
+
+	static ConstructorHelpers::FObjectFinder<UMaterial>Material1(TEXT("Material'/Game/Fruitcake_Game/Materials/Red.Red'"));
+	red_material = Material1.Object;
 }
 
 // Called when the game starts or when spawned
@@ -82,20 +107,20 @@ void ARadishEnemy::Tick(float DeltaTime)
 
 	//	FireAtPlayer();
 
-	if (bHostile)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, TEXT("follow"));
-		FVector Direction = PlayerCharacter->GetActorLocation() - GetActorLocation();
-		Direction.Normalize();
+	//if (bHostile)
+	//{
+	//	GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, TEXT("follow"));
+	//	FVector Direction = PlayerCharacter->GetActorLocation() - GetActorLocation();
+	//	Direction.Normalize();
 
-		Direction = Direction * DeltaTime * MovementSpeed;
+	//	Direction = Direction * DeltaTime * MovementSpeed;
 
-		SetActorLocation(GetActorLocation() + Direction);
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, TEXT("patrol"));
-	}
+	//	//SetActorLocation(GetActorLocation() + Direction);
+	//}
+	//else
+	//{
+	//	GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, TEXT("patrol"));
+	//}
 }
 
 void ARadishEnemy::FireAtPlayer()
@@ -171,11 +196,24 @@ void ARadishEnemy::FireAoeAtPlayer()
 	}
 }
 
+void ARadishEnemy::SetStunned()
+{
+	bStunned = false;
+	RadishEnemyMeshComponent->SetMaterial(0, default_material);
+}
+
 void ARadishEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherComp->ComponentHasTag(FName("PlayerAttack")))
 	{
-		Destroy();
+		bStunned = true;
+		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
+
+		RadishEnemyMeshComponent->SetMaterial(0, red_material);
+	}
+	if (OtherComp->ComponentHasTag(FName("PlayerBody")) && bStunned == false)
+	{
+		PlayerCharacter->ReducePlayerHealth();
 	}
 }
 
