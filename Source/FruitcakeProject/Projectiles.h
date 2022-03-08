@@ -26,7 +26,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// initial firing function
-	void FireInDirection(const FVector& ShootDirection, bool isHoming);
+	void FireInDirection(const FVector& ShootDirection, bool isHoming, bool isPlayer);
 
 	// called after initial function if bullet is set to homing, controls homing
 	void HomingOnTarget();
@@ -58,4 +58,6 @@ protected:
 	// Projectile movement component.
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 		UProjectileMovementComponent* ProjectileMovementComponent;
+
+	bool isPlayerProjectile;
 };

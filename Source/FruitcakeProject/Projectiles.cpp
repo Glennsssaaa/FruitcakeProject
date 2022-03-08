@@ -3,6 +3,7 @@
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "PlayerCharacter.h"
 #include "Engine/Engine.h"
+#include "FlowerEnemy.h"
 #include "Projectiles.h"
 
 
@@ -94,11 +95,24 @@ void AProjectiles::Tick(float DeltaTime)
 
 }
 
-void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming)
+void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming, bool isPlayer)
 {
+	// sets if projectile is coming from the player or not, used in collision checks
+	isPlayerProjectile = isPlayer;
+
 	// Sets velocity vector to be the direction multipled by the initial speed of the projectile
+
 	ProjectileMovementComponent->Velocity = ShootDirection * ProjectileMovementComponent->InitialSpeed;
-	ProjectileMovementComponent->HomingTargetComponent = PlayerCharacter->GetRootComponent();
+
+	if (isHoming)
+	{
+		ProjectileMovementComponent->bIsHomingProjectile = false;
+		ProjectileMovementComponent->HomingTargetComponent = PlayerCharacter->GetRootComponent();
+	}
+	else {
+		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("PlayerAttack"));
+		ProjectileMeshComponent->BodyInstance.SetCollisionProfileName(TEXT("PlayerAttack"));
+	}
 
 	//// Once projecitle is fired, check to see if projectile was set to homing
 	if (isHoming)
@@ -123,10 +137,21 @@ void AProjectiles::GetTarget()
 
 void AProjectiles::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (OtherActor != this)
+	if (OtherActor != this) 
 	{
-		PlayerCharacter->ReducePlayerHealth();
-		Destroy();
+		// Enemy Projectile Collision Responses
+		if (!isPlayerProjectile)
+		{
+			PlayerCharacter->ReducePlayerHealth();
+			Destroy();
+		}
+
+		// Player Projectile Collision Responses
+		if (isPlayerProjectile) 
+		{
+		
+		}
+
 	}
 }
 

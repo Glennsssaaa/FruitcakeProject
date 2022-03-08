@@ -29,7 +29,7 @@ protected:
 		TSubclassOf<class AAoeAttackController> AOEAttackClass;
 
 	// AOE attack spawn class (Vector)
-	UPROPERTY(EditDefaultsOnly, Category = "AOE")
+	UPROPERTY(EditDefaultsOnly, Category = "PlayerProjectiles")
 		TSubclassOf<class AProjectiles> ProjectileClass;
 public:
 	// Called every frame
@@ -61,6 +61,11 @@ public:
 	/* --------- Switch Persepctive ---------- */
 	UFUNCTION()
 		void SwitchPerspectiveMethod();
+
+
+	/* --------- Player Projectile Casting ---------- */
+	void CastProjectileMethod();
+
 
 	/* --------- Test Functions ---------- */
 	UFUNCTION()

@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "PlayerCharacter.h"
+#include "Runtime/Engine/Classes/Engine/World.h"
 #include "Projectiles.h"
 #include "AoeAttackController.h"
 #include "FlowerEnemy.h"
@@ -92,8 +93,9 @@ void AFlowerEnemy::FireAtPlayer()
 		UWorld* World = GetWorld();
 		if (World)
 		{
-			FActorSpawnParameters SpawnParams;
+			FActorSpawnParameters SpawnParams = FActorSpawnParameters();
 			SpawnParams.Owner = this;
+			//SpawnParams.Name = FName(TEXT("AFlowerEnemy"));
 			SpawnParams.Instigator = GetInstigator();
 
 			// Spawn the projectile at the muzzle.
@@ -103,9 +105,8 @@ void AFlowerEnemy::FireAtPlayer()
 			{
 				// Set the projectile's initial trajectory.
 				FVector LaunchDirection = MuzzleRotation.Vector();
-				Projectile->FireInDirection(LaunchDirection, true);
+				Projectile->FireInDirection(LaunchDirection, true, false);
 			}
-
 		}
 	}
 }
