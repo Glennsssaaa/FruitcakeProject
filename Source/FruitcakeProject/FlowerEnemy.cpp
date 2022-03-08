@@ -58,7 +58,7 @@ void AFlowerEnemy::BeginPlay()
 	FlowerAoeAttacks = AAoeAttackController::StaticClass();
 
 	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &AFlowerEnemy::FireAtPlayer, 3.f, true, 0.5f);
-	GetWorldTimerManager().SetTimer(AoeAttackTimerHandle, this, &AFlowerEnemy::FireAoeAtPlayer, 5.f, true, 2.f);
+	//GetWorldTimerManager().SetTimer(AoeAttackTimerHandle, this, &AFlowerEnemy::FireAoeAtPlayer, 5.f, true, 2.f);
 }
 
 // Called every frame
