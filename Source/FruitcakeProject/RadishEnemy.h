@@ -11,7 +11,7 @@
 
 #include "RadishEnemy.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class FRUITCAKEPROJECT_API ARadishEnemy : public APawn
 {
 	GENERATED_BODY()

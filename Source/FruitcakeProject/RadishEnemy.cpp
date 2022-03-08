@@ -49,7 +49,8 @@ ARadishEnemy::ARadishEnemy()
 			static ConstructorHelpers::FObjectFinder<UMaterial>Mat(TEXT("Material'/Game/Fruitcake_Game/Materials/ProjectileM.ProjectileM'"));
 			WeakPointMeshComponent->SetMaterial(0, Mat.Object);
 		}
-		WeakPointMeshComponent->SetWorldLocation(FVector(-10, 0, -50));
+		WeakPointMeshComponent->SetWorldScale3D(FVector(0.5f, 0.5f, 0.5f));
+		WeakPointMeshComponent->SetWorldLocation(FVector(-25, 0, -50));
 		// set how long projectile will last in seconds, after this amount of time, projectile is destroyed
 		//InitialLifeSpan = 3.f;
 	}
