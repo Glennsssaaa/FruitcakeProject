@@ -149,6 +149,12 @@ void AFlowerEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 	{
 		Destroy();
 	}
+
+	if (OtherComp->GetCollisionProfileName() == TEXT("PlayerAttack")) 
+	{
+		OtherActor->Destroy();
+		Destroy();
+	}
 }
 
 void AFlowerEnemy::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)

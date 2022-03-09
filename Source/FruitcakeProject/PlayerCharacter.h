@@ -64,8 +64,10 @@ public:
 
 
 	/* --------- Player Projectile Casting ---------- */
-	void CastProjectileMethod();
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+		void CastProjectileMethod();
 
+	void ResetProjecitle();
 
 	/* --------- Test Functions ---------- */
 	UFUNCTION()
@@ -73,10 +75,9 @@ public:
 
 	UFUNCTION()
 		void FireABiggerAoe();
-	UFUNCTION()
 
 
-
+	void RotatePlayerToCursor();
 
 		void ReducePlayerHealth();
 
@@ -90,10 +91,13 @@ protected:
 	float m_Turn_Rate;
 	float m_Look_Rate;
 	bool is_Dashing;
-
+	bool can_Cast;
 
 	// Timer handle for handling dash function
 	FTimerHandle DashTimerHandle;
+	// Timer handle to handle projectile cooldown
+	FTimerHandle ProjectileTimerHandle;
+
 
 	// Health
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
