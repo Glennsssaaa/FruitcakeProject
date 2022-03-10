@@ -8,7 +8,7 @@
 
 #include "MushroomEnemy.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class FRUITCAKEPROJECT_API AMushroomEnemy : public APawn
 {
 	GENERATED_BODY()

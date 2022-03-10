@@ -49,13 +49,11 @@ ARadishEnemy::ARadishEnemy()
 			static ConstructorHelpers::FObjectFinder<UMaterial>Mat(TEXT("Material'/Game/Fruitcake_Game/Materials/ProjectileM.ProjectileM'"));
 			WeakPointMeshComponent->SetMaterial(0, Mat.Object);
 		}
-		WeakPointMeshComponent->SetWorldScale3D(FVector(0.25f, 0.25f, 0.25f));
-		WeakPointMeshComponent->SetWorldLocation(FVector(-25, 0, -50));
+		WeakPointMeshComponent->SetWorldLocation(FVector(-50, 0, -50));
 		// set how long projectile will last in seconds, after this amount of time, projectile is destroyed
 		//InitialLifeSpan = 3.f;
 	}
 	WeakPointMeshComponent->SetupAttachment(RootComponent);
-	WeakPointMeshComponent->SetCollisionProfileName(TEXT("Enemy"));
 
 	//sight sphere component set up
 	if (!SightSphere)
@@ -70,7 +68,7 @@ ARadishEnemy::ARadishEnemy()
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &ARadishEnemy::OnOverlapBegin);
 	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &ARadishEnemy::OnOverlapEnd);
 
-	WeakPointMeshComponent->SetCollisionProfileName(TEXT("Enemy"));
+	WeakPointMeshComponent->SetCollisionProfileName(TEXT("AICollision"));
 	WeakPointMeshComponent->OnComponentBeginOverlap.AddDynamic(this, &ARadishEnemy::OnWeakPointOverlapBegin);
 
 	SightSphere->SetCollisionProfileName(TEXT("AICollision"));
@@ -223,7 +221,7 @@ void ARadishEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 
 void ARadishEnemy::OnWeakPointOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherComp->ComponentHasTag(FName("PlayerAttack")))
+	if (OtherComp->ComponentHasTag(FName("PlayerAttack")) && bStunned == true)
 	{
 		Destroy();
 	}
