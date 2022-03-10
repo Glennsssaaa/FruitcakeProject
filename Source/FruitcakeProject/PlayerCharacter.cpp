@@ -45,6 +45,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	m_Can_Move = true;
+	can_Cast = true;
 }
 
 // Called every frame
@@ -84,6 +85,10 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	// PERSPECTIVE SWITCHING 
 	PlayerInputComponent->BindAction("SwitchPerspective", IE_Pressed, this, &APlayerCharacter::SwitchPerspectiveMethod);
+
+
+	// PROJECTILE FIRING
+	PlayerInputComponent->BindAction("CastProjectile", IE_Pressed, this, &APlayerCharacter::CastProjectileMethod);
 
 }
 
@@ -179,6 +184,77 @@ void APlayerCharacter::SwitchPerspectiveMethod()
 	// do switch perspective fraser 
 }
 
+void APlayerCharacter::CastProjectileMethod()
+{
+	if (can_Cast) 
+	{
+		FVector CameraLocation;
+		FRotator CameraRotation;
+		GetActorEyesViewPoint(CameraLocation, CameraRotation);
+
+		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
+		MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
+
+		// Transform MuzzleOffset from camera space to world space.
+		FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+
+		FVector SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z + 50);
+
+		// set rotation of projectile to camera rotation
+		FRotator MuzzleRotation = GetActorRotation();
+
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			SpawnParams.Instigator = GetInstigator();
+
+			// Spawn the projectile at the muzzle.
+			AProjectiles* Projectile = World->SpawnActor<AProjectiles>(ProjectileClass, SpawnLocation, MuzzleRotation, SpawnParams);
+
+			if (Projectile)
+			{
+				// Set the projectile's initial trajectory.
+				FVector LaunchDirection = MuzzleRotation.Vector();
+				Projectile->FireInDirection(LaunchDirection, false, true);
+				can_Cast = false;
+				GetWorldTimerManager().SetTimer(ProjectileTimerHandle, this, &APlayerCharacter::ResetProjecitle, .2f, false);
+			}
+
+		}
+	}
+}
+
+void APlayerCharacter::ResetProjecitle()
+{
+	can_Cast = true;
+}
+
+
+void APlayerCharacter::RotatePlayerToCursor()
+{
+	FHitResult test;
+	FVector MouseLocation;
+	FVector MouseDirection;
+
+	APlayerController* PController = GetWorld()->GetFirstPlayerController();
+
+
+	PController->DeprojectMousePositionToWorld(MouseLocation, MouseDirection);
+
+	FRotator charRotation = GetActorRotation();
+	FRotator targetRotation = MouseDirection.Rotation();
+
+	FRotator newRot = FRotator(charRotation.Pitch, targetRotation.Yaw, charRotation.Roll);
+
+
+	FRotator PlayerRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), MouseLocation);
+
+	SetActorRelativeRotation(newRot);
+
+}
+
 void APlayerCharacter::FireAoeAtPlayer()
 {
 	// ensure aoe class is initialised
@@ -228,40 +304,40 @@ void APlayerCharacter::FireABiggerAoe()
 	if (ProjectileClass)
 	{
 
-		FVector SpawnLocation;
-		FRotator CameraRotation;
-		//	GetActorEyesViewPoint(CameraLocation, CameraRotation);
+	//	FVector SpawnLocation;
+	//	FRotator CameraRotation;
+	//	//	GetActorEyesViewPoint(CameraLocation, CameraRotation);
 
 
-		SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z );
-		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
-		MuzzleOffset.Set(100.0f, 40.0f, 0.0f);
+	//	SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z );
+	//	// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
+	//	MuzzleOffset.Set(100.0f, 40.0f, 0.0f);
 
-		// Transform MuzzleOffset from camera space to world space.
-	//	FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+	//	// Transform MuzzleOffset from camera space to world space.
+	////	FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
 
-		// set rotation of projectile to camera rotation
-		FRotator MuzzleRotation = CameraRotation;
+	//	// set rotation of projectile to camera rotation
+	//	FRotator MuzzleRotation = CameraRotation;
 
-		UWorld* World = GetWorld();
-		if (World)
-		{
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.Owner = this;
-			SpawnParams.Instigator = GetInstigator();
+	//	UWorld* World = GetWorld();
+	//	if (World)
+	//	{
+	//		FActorSpawnParameters SpawnParams;
+	//		SpawnParams.Owner = this;
+	//		SpawnParams.Instigator = GetInstigator();
 
-			// Spawn the projectile at the muzzle.
-			AProjectiles* AOECircle = World->SpawnActor<AProjectiles>(ProjectileClass, SpawnLocation, FRotator(0.f, 0.f, 0.f), SpawnParams);
+	//		// Spawn the projectile at the muzzle.
+	//		AProjectiles* AOECircle = World->SpawnActor<AProjectiles>(ProjectileClass, SpawnLocation, FRotator(0.f, 0.f, 0.f), SpawnParams);
 
-			if (AOECircle)
-			{
-				// Set the projectile's initial trajectory.
-				FVector LaunchDirection = MuzzleRotation.Vector();
-				AOECircle->FireInDirection(LaunchDirection, 1.f);
-				// remove energy
-			}
+	//		if (AOECircle)
+	//		{
+	//			// Set the projectile's initial trajectory.
+	//			FVector LaunchDirection = MuzzleRotation.Vector();
+	//			AOECircle->FireInDirection(LaunchDirection, 1.f);
+	//			// remove energy
+	//		}
 
-		}
+	//	}
 	}
 }
 

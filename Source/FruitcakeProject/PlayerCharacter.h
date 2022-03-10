@@ -29,7 +29,7 @@ protected:
 		TSubclassOf<class AAoeAttackController> AOEAttackClass;
 
 	// AOE attack spawn class (Vector)
-	UPROPERTY(EditDefaultsOnly, Category = "AOE")
+	UPROPERTY(EditDefaultsOnly, Category = "PlayerProjectiles")
 		TSubclassOf<class AProjectiles> ProjectileClass;
 public:
 	// Called every frame
@@ -62,18 +62,24 @@ public:
 	UFUNCTION()
 		void SwitchPerspectiveMethod();
 
+
+	/* --------- Player Projectile Casting ---------- */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+		void CastProjectileMethod();
+
+	void ResetProjecitle();
+
 	/* --------- Test Functions ---------- */
 	UFUNCTION()
 		void FireAoeAtPlayer();
 
 	UFUNCTION()
 		void FireABiggerAoe();
-	UFUNCTION()
 
 
+	void RotatePlayerToCursor();
 
-
-		void ReducePlayerHealth();
+	void ReducePlayerHealth();
 
 
 protected:
@@ -85,10 +91,13 @@ protected:
 	float m_Turn_Rate;
 	float m_Look_Rate;
 	bool is_Dashing;
-
+	bool can_Cast;
 
 	// Timer handle for handling dash function
 	FTimerHandle DashTimerHandle;
+	// Timer handle to handle projectile cooldown
+	FTimerHandle ProjectileTimerHandle;
+
 
 	// Health
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

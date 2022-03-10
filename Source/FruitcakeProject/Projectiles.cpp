@@ -1,9 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Projectiles.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "PlayerCharacter.h"
 #include "Engine/Engine.h"
+#include "FlowerEnemy.h"
+#include "Projectiles.h"
 
 
 // Sets default values
@@ -20,7 +21,7 @@ AProjectiles::AProjectiles()
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Nothing"));
 
 		// Set collision box radius.
-		CollisionComponent->InitSphereRadius(15.0f);
+		CollisionComponent->InitSphereRadius(30.0f);
 		// Set the root component to be newly created component.
 		RootComponent = CollisionComponent;
 	}
@@ -55,13 +56,14 @@ AProjectiles::AProjectiles()
 		if (Mesh.Succeeded())
 		{
 			ProjectileMeshComponent->SetStaticMesh(Mesh.Object);
+			ProjectileMeshComponent->SetWorldScale3D(FVector(2.f, 2.f, 2.f));
 		}
 		// set how long projectile will last in seconds, after this amount of time, projectile is destroyed
 		InitialLifeSpan = 3.f;
 	}
 
 	// Load material for projectile from unreal files
-	static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("Material'/Game/Fruitcake_Game/Materials/Blue.Blue'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("Material'/Game/Fruitcake_Game/Materials/test.test'"));
 	if (Material.Succeeded())
 	{
 		ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
@@ -94,17 +96,29 @@ void AProjectiles::Tick(float DeltaTime)
 
 }
 
-void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming)
+void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming, bool isPlayer)
 {
-	// Sets velocity vector to be the direction multipled by the initial speed of the projectile
-	ProjectileMovementComponent->Velocity = ShootDirection * ProjectileMovementComponent->InitialSpeed;
-	ProjectileMovementComponent->HomingTargetComponent = PlayerCharacter->GetRootComponent();
+	// sets if projectile is coming from the player or not, used in collision checks
+	isPlayerProjectile = isPlayer;
 
-	//// Once projecitle is fired, check to see if projectile was set to homing
+	// Sets velocity vector to be the direction multipled by the initial speed of the projectile
+
+	ProjectileMovementComponent->Velocity = ShootDirection * ProjectileMovementComponent->InitialSpeed;
+
+	// Once projecitle is fired, check to see if projectile was set to homing
+
 	if (isHoming)
 	{
+		ProjectileMovementComponent->bIsHomingProjectile = false;
+		ProjectileMovementComponent->HomingTargetComponent = PlayerCharacter->GetRootComponent();
+
 		// if set to homing, wait half a second before targetting enemy
 		GetWorldTimerManager().SetTimer(ProjectileTimerHandle, this, &AProjectiles::HomingOnTarget, .5f, false);
+	}
+	else
+	{
+		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("PlayerAttack"));
+		ProjectileMeshComponent->BodyInstance.SetCollisionProfileName(TEXT("PlayerAttack"));
 	}
 }
 
@@ -113,7 +127,6 @@ void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming)
 void AProjectiles::HomingOnTarget()
 {
 	// sets target to enemy collision component
-		// sets target to enemy collision component
 	ProjectileMovementComponent->bIsHomingProjectile = false;
 }
 
@@ -125,9 +138,18 @@ void AProjectiles::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 {
 	if (OtherActor != this)
 	{
-		PlayerCharacter->ReducePlayerHealth();
-		Destroy();
+		// Enemy Projectile Collision Responses
+		if (!isPlayerProjectile)
+		{
+			PlayerCharacter->ReducePlayerHealth();
+			Destroy();
+		}
+
+		// Player Projectile Collision Responses
+		if (isPlayerProjectile)
+		{
+
+		}
+
 	}
 }
-
-
