@@ -191,7 +191,7 @@ void APlayerCharacter::DashInputMethod()
 		m_Player_Energy_Points -= 0.05f;
 
 		// shoot player up first to prevent collision with floor during dash
-		//LaunchCharacter(FVector(0.f, 0.f, 300.f), false, false);
+		LaunchCharacter(FVector(0.f, 0.f, 300.f), false, false);
 
 		// set a timer before next function to prevent forward movement from happening too soon
 		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::DashMethod, 0.1f, false);
@@ -211,7 +211,7 @@ void APlayerCharacter::DashMethod()
 	GetCharacterMovement()->BrakingFrictionFactor = 0.f;
 
 	// set timer, this is how long before the player can dash again (Half a second)
-	GetWorldTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::ResetDashMethod, .5f, false);
+	//GetWorldTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::ResetDashMethod, .5f, false);
 	// launch character forward
 	LaunchCharacter(direction * 1000, false, true);
 }
@@ -219,10 +219,6 @@ void APlayerCharacter::DashMethod()
 void APlayerCharacter::ResetDashMethod()
 {
 	is_Dashing = false;
-
-	//enable friction when dash stops
-	GetCharacterMovement()->BrakingDecelerationWalking = 2048.f;
-	GetCharacterMovement()->BrakingFrictionFactor = 2.f;
 }
 
 void APlayerCharacter::SwitchPerspectiveMethod(float value)
