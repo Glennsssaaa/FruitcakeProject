@@ -139,10 +139,9 @@ void AProjectiles::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 	if (OtherActor != this)
 	{
 		// Enemy Projectile Collision Responses
-		if (!isPlayerProjectile)
+		if (!isPlayerProjectile && OtherComponent->ComponentHasTag(FName(TEXT("Player"))))
 		{
 			PlayerCharacter->ReducePlayerHealth();
-			Destroy();
 		}
 
 		// Player Projectile Collision Responses
@@ -150,6 +149,7 @@ void AProjectiles::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 		{
 
 		}
-
+		Destroy();
 	}
+
 }
