@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
 
 #include "MushroomEnemy.generated.h"
 
@@ -34,6 +35,11 @@ public:
 	UFUNCTION()
 		void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	UFUNCTION()
+		void OnTriggerBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+		void OnTriggerEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 protected:
 
 	// pointer to player character
@@ -51,8 +57,11 @@ protected:
 		UStaticMeshComponent* MushroomEnemyMeshComponent;
 
 	// Sphere range detection
-	/*UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
-		USphereComponent* SightSphere;*/
+	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
+		USphereComponent* SightSphere;
+
+	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
+		bool bHostile;
 
 	// Mushroom projectiles spawn class (Vector)
 	UPROPERTY(EditDefaultsOnly, Category = "MushroomEnemy")

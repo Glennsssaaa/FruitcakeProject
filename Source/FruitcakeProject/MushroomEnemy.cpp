@@ -45,13 +45,17 @@ AMushroomEnemy::AMushroomEnemy()
 	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AMushroomEnemy::OnOverlapEnd);
 
 	//sight sphere component set up
-	/*if (!SightSphere)
+	if (!SightSphere)
 	{
 		SightSphere = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 		SightSphere->SetSphereRadius(750.f);
 
 		SightSphere->SetupAttachment(RootComponent);
-	}*/
+	}
+
+	CollisionComponent->SetCollisionProfileName(TEXT("AICollision"));
+	SightSphere->OnComponentBeginOverlap.AddDynamic(this, &AMushroomEnemy::OnTriggerBegin);
+	SightSphere->OnComponentEndOverlap.AddDynamic(this, &AMushroomEnemy::OnTriggerEnd);
 }
 
 // Called when the game starts or when spawned
@@ -67,7 +71,7 @@ void AMushroomEnemy::BeginPlay()
 	MushroomAoeAttacks = AAoeAttackController::StaticClass();
 
 	//GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &AMushroomEnemy::FireAtPlayer, 3.f, true, 0.5f);
-	GetWorldTimerManager().SetTimer(AoeAttackTimerHandle, this, &AMushroomEnemy::FireAoeAtPlayer, 5.f, true, 2.f);
+	GetWorldTimerManager().SetTimer(AoeAttackTimerHandle, this, &AMushroomEnemy::FireAoeAtPlayer, 3.f, true, 2.f);
 }
 
 // Called every frame
@@ -125,7 +129,8 @@ void AMushroomEnemy::FireAoeAtPlayer()
 	{
 		FVector SpawnLocation;
 		FRotator CameraRotation;
-		SpawnLocation = FVector(PlayerCharacter->GetActorLocation().X, PlayerCharacter->GetActorLocation().Y, PlayerCharacter->GetActorLocation().Z - 90.f);
+		//SpawnLocation = FVector(PlayerCharacter->GetActorLocation().X, PlayerCharacter->GetActorLocation().Y, PlayerCharacter->GetActorLocation().Z - 90.f);
+		SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z - 65.f);
 
 		// set rotation of projectile to camera rotation
 		FRotator MuzzleRotation = CameraRotation;
@@ -144,7 +149,7 @@ void AMushroomEnemy::FireAoeAtPlayer()
 			{
 				// Set the projectile's initial trajectory.
 				FVector LaunchDirection = MuzzleRotation.Vector();
-				Projectile->FireAtLocation(LaunchDirection, 3.f);
+				Projectile->FireAtLocation(LaunchDirection, 7.f);
 			}
 
 		}
@@ -163,3 +168,18 @@ void AMushroomEnemy::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* O
 {
 }
 
+void AMushroomEnemy::OnTriggerBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherComp->GetCollisionProfileName() == TEXT("Player"))
+	{
+		bHostile = true;
+	}
+}
+
+void AMushroomEnemy::OnTriggerEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherComp->GetCollisionProfileName() == TEXT("Player"))
+	{
+		bHostile = false;
+	}
+}
