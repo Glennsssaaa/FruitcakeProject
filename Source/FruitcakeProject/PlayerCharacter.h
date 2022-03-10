@@ -61,7 +61,7 @@ public:
 		void ResetDashMethod();
 
 	/* --------- Switch Persepctive ---------- */
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Perspective")
 		void SwitchPerspectiveMethod(float value);
 
 

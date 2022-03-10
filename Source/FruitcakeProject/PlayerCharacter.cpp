@@ -2,8 +2,6 @@
 
 
 #include "PlayerCharacter.h"
-#include "Camera/CameraComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "Math/UnrealMathUtility.h" 
 #include "Components/InputComponent.h" 
 #include "Components/CapsuleComponent.h"
@@ -73,7 +71,7 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-//	SetActorRotation(GetActorRotation() += FRotator(1.f));
+	//	SetActorRotation(GetActorRotation() += FRotator(1.f));
 
 	if (!UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 1.0f))
 	{
@@ -125,7 +123,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("FireBig", IE_Pressed, this, &APlayerCharacter::FireABiggerAoe);
 
 	// PERSPECTIVE SWITCHING 
-	PlayerInputComponent->BindAxis("SwitchPerspective", this, &APlayerCharacter::SwitchPerspectiveMethod);
+//	PlayerInputComponent->BindAxis("SwitchPerspective", this, &APlayerCharacter::SwitchPerspectiveMethod);
 
 	// PROJECTILE FIRING
 	PlayerInputComponent->BindAction("CastProjectile", IE_Pressed, this, &APlayerCharacter::CastProjectileMethod);
@@ -182,7 +180,7 @@ void APlayerCharacter::LookUpRateMethod(float value)
 {
 	AddControllerPitchInput(value *= GetWorld()->GetDeltaSeconds() * m_Look_Rate);
 }
- 
+
 
 void APlayerCharacter::DashInputMethod()
 {
@@ -226,11 +224,14 @@ void APlayerCharacter::SwitchPerspectiveMethod(float value)
 	{
 		m_Target_Angle += value;
 	}
+	m_Cam_Rotate = FRotator::ZeroRotator;
+	m_Cam_Rotate.Roll = Camera->GetComponentRotation().Roll;
+
 }
 
 void APlayerCharacter::CastProjectileMethod()
 {
-	if (can_Cast) 
+	if (can_Cast)
 	{
 		FVector CameraLocation;
 		FRotator CameraRotation;
@@ -348,40 +349,40 @@ void APlayerCharacter::FireABiggerAoe()
 	if (ProjectileClass)
 	{
 
-	//	FVector SpawnLocation;
-	//	FRotator CameraRotation;
-	//	//	GetActorEyesViewPoint(CameraLocation, CameraRotation);
+		//	FVector SpawnLocation;
+		//	FRotator CameraRotation;
+		//	//	GetActorEyesViewPoint(CameraLocation, CameraRotation);
 
 
-	//	SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z );
-	//	// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
-	//	MuzzleOffset.Set(100.0f, 40.0f, 0.0f);
+		//	SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z );
+		//	// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
+		//	MuzzleOffset.Set(100.0f, 40.0f, 0.0f);
 
-	//	// Transform MuzzleOffset from camera space to world space.
-	////	FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+		//	// Transform MuzzleOffset from camera space to world space.
+		////	FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
 
-	//	// set rotation of projectile to camera rotation
-	//	FRotator MuzzleRotation = CameraRotation;
+		//	// set rotation of projectile to camera rotation
+		//	FRotator MuzzleRotation = CameraRotation;
 
-	//	UWorld* World = GetWorld();
-	//	if (World)
-	//	{
-	//		FActorSpawnParameters SpawnParams;
-	//		SpawnParams.Owner = this;
-	//		SpawnParams.Instigator = GetInstigator();
+		//	UWorld* World = GetWorld();
+		//	if (World)
+		//	{
+		//		FActorSpawnParameters SpawnParams;
+		//		SpawnParams.Owner = this;
+		//		SpawnParams.Instigator = GetInstigator();
 
-	//		// Spawn the projectile at the muzzle.
-	//		AProjectiles* AOECircle = World->SpawnActor<AProjectiles>(ProjectileClass, SpawnLocation, FRotator(0.f, 0.f, 0.f), SpawnParams);
+		//		// Spawn the projectile at the muzzle.
+		//		AProjectiles* AOECircle = World->SpawnActor<AProjectiles>(ProjectileClass, SpawnLocation, FRotator(0.f, 0.f, 0.f), SpawnParams);
 
-	//		if (AOECircle)
-	//		{
-	//			// Set the projectile's initial trajectory.
-	//			FVector LaunchDirection = MuzzleRotation.Vector();
-	//			AOECircle->FireInDirection(LaunchDirection, 1.f);
-	//			// remove energy
-	//		}
+		//		if (AOECircle)
+		//		{
+		//			// Set the projectile's initial trajectory.
+		//			FVector LaunchDirection = MuzzleRotation.Vector();
+		//			AOECircle->FireInDirection(LaunchDirection, 1.f);
+		//			// remove energy
+		//		}
 
-	//	}
+		//	}
 	}
 }
 
