@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Components/PointLightComponent.h"
 #include "Projectiles.generated.h"
 
 UCLASS()
@@ -58,4 +59,8 @@ protected:
 	// Projectile movement component.
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 		UProjectileMovementComponent* ProjectileMovementComponent;
+
+	//Point Light component
+	UPROPERTY(VisibleAnywhere)
+		UPointLightComponent* PointLightComponent;
 };

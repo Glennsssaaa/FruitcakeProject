@@ -8,6 +8,8 @@
 #include "ParticleDefinitions.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "PlayerCharacter.generated.h"
 
@@ -60,7 +62,7 @@ public:
 
 	/* --------- Switch Persepctive ---------- */
 	UFUNCTION()
-		void SwitchPerspectiveMethod();
+		void SwitchPerspectiveMethod(float value);
 
 	/* --------- Test Functions ---------- */
 	UFUNCTION()
@@ -68,15 +70,26 @@ public:
 
 	UFUNCTION()
 		void FireABiggerAoe();
+
 	UFUNCTION()
-
-
-
-
 		void ReducePlayerHealth();
+
+	UFUNCTION()
+		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+		void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 
 
 protected:
+
+	//Spring Arm Component for controlling the camera
+	UPROPERTY(VisibleDefaultsOnly)
+		USpringArmComponent* CameraBoom;
+
+	//Camera Component
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+		UCameraComponent* Camera;
 
 	// Gun muzzle offset from the camera location
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
@@ -86,6 +99,15 @@ protected:
 	float m_Look_Rate;
 	bool is_Dashing;
 
+	//Perspective
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_Rotation_Angle = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_Target_Angle = 45.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_Rotation_Speed = 200.f;
 
 	// Timer handle for handling dash function
 	FTimerHandle DashTimerHandle;
