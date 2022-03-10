@@ -9,6 +9,8 @@
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS(Blueprintable)
@@ -60,7 +62,7 @@ public:
 
 	/* --------- Switch Persepctive ---------- */
 	UFUNCTION()
-		void SwitchPerspectiveMethod();
+		void SwitchPerspectiveMethod(float value);
 
 
 	/* --------- Player Projectile Casting ---------- */
@@ -82,6 +84,11 @@ public:
 	void ReducePlayerHealth();
 
 
+	UFUNCTION()
+		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+		void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 protected:
 
 	// Gun muzzle offset from the camera location
@@ -97,6 +104,14 @@ protected:
 	FTimerHandle DashTimerHandle;
 	// Timer handle to handle projectile cooldown
 	FTimerHandle ProjectileTimerHandle;
+
+	//Spring Arm Component for controlling the camera
+	UPROPERTY(VisibleDefaultsOnly)
+		USpringArmComponent* CameraBoom;
+
+	//Camera Component
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+		UCameraComponent* Camera;
 
 
 	// Health
@@ -119,5 +134,15 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool m_Can_Move = true;
+
+	//Perspective
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_Rotation_Angle = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_Target_Angle = 45.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_Rotation_Speed = 200.f;
 
 };

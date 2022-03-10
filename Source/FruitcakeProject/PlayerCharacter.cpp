@@ -6,6 +6,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Math/UnrealMathUtility.h" 
 #include "Components/InputComponent.h" 
+#include "Components/CapsuleComponent.h"
 #include "AoeAttackController.h"
 #include "Projectiles.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -38,6 +39,26 @@ APlayerCharacter::APlayerCharacter()
 	AOEAttackClass = AAoeAttackController::StaticClass();
 	ProjectileClass = AProjectiles::StaticClass();
 
+	if (!CameraBoom)
+	{
+		CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+		CameraBoom->TargetArmLength = 0.f;
+		CameraBoom->bInheritPitch = false;
+		CameraBoom->bInheritRoll = false;
+		CameraBoom->bInheritYaw = false;
+
+		CameraBoom->SetupAttachment(RootComponent);
+	}
+
+	if (!Camera)
+	{
+		Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+
+		Camera->SetupAttachment(CameraBoom);
+	}
+
+	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
+
 }
 
 // Called when the game starts or when spawned
@@ -53,6 +74,26 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 //	SetActorRotation(GetActorRotation() += FRotator(1.f));
+
+	if (!UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 1.0f))
+	{
+		float Rotation_Step = m_Rotation_Speed * DeltaTime;
+		if (m_Target_Angle < m_Rotation_Angle)
+		{
+			Rotation_Step *= -1;
+		}
+
+		m_Rotation_Angle += Rotation_Step;
+
+		//Vector(X = cos(angle) * radius, Y = sin(angle) * radius, Z = height)
+		FVector New_Offset = FVector(cosf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * 1000.f, sinf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * 1000.f, 1000.f);
+		CameraBoom->TargetOffset = New_Offset;
+		CameraBoom->SetRelativeRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation() + New_Offset, GetActorLocation()));
+	}
+	else
+	{
+		m_Rotation_Angle = m_Target_Angle;
+	}
 }
 
 // Called to bind functionality to input
@@ -84,8 +125,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("FireBig", IE_Pressed, this, &APlayerCharacter::FireABiggerAoe);
 
 	// PERSPECTIVE SWITCHING 
-	PlayerInputComponent->BindAction("SwitchPerspective", IE_Pressed, this, &APlayerCharacter::SwitchPerspectiveMethod);
-
+	PlayerInputComponent->BindAxis("SwitchPerspective", this, &APlayerCharacter::SwitchPerspectiveMethod);
 
 	// PROJECTILE FIRING
 	PlayerInputComponent->BindAction("CastProjectile", IE_Pressed, this, &APlayerCharacter::CastProjectileMethod);
@@ -179,9 +219,13 @@ void APlayerCharacter::ResetDashMethod()
 	is_Dashing = false;
 }
 
-void APlayerCharacter::SwitchPerspectiveMethod()
+void APlayerCharacter::SwitchPerspectiveMethod(float value)
 {
-	// do switch perspective fraser 
+	// add axis value (E = 90, Q = -90) to target angle
+	if (UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 0.1f))
+	{
+		m_Target_Angle += value;
+	}
 }
 
 void APlayerCharacter::CastProjectileMethod()
@@ -344,4 +388,23 @@ void APlayerCharacter::FireABiggerAoe()
 void APlayerCharacter::ReducePlayerHealth()
 {
 	m_Player_Health_Points -= 0.1f;
+}
+
+void APlayerCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (is_Dashing && Cast<UStaticMeshComponent>(OtherComp) != NULL)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Red, TEXT("hit"));
+	}
+}
+
+void APlayerCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (is_Dashing && Cast<UStaticMeshComponent>(OtherComponent) != NULL)
+	{
+		//GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Red, TEXT("hit"));
+
+		// set timer, this is how long before the player can dash again (Half a second)
+		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::ResetDashMethod, .25f, false);
+	}
 }

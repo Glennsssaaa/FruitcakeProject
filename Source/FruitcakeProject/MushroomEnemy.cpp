@@ -116,7 +116,7 @@ void AMushroomEnemy::FireAtPlayer()
 			{
 				// Set the projectile's initial trajectory.
 				FVector LaunchDirection = MuzzleRotation.Vector();
-				Projectile->FireInDirection(LaunchDirection, true);
+				Projectile->FireInDirection(LaunchDirection, true, false);
 			}
 
 		}

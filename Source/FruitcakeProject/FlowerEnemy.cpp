@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "FlowerEnemy.h"
 #include "PlayerCharacter.h"
 #include "Runtime/Engine/Classes/Engine/World.h"
 #include "Projectiles.h"
 #include "AoeAttackController.h"
-#include "FlowerEnemy.h"
 
 // Sets default values
 AFlowerEnemy::AFlowerEnemy()

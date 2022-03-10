@@ -6,15 +6,14 @@
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "Components/PointLightComponent.h"
 #include "Projectiles.generated.h"
 
 UCLASS()
 class FRUITCAKEPROJECT_API AProjectiles : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AProjectiles();
 
@@ -22,12 +21,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// initial firing function
-	void FireInDirection(const FVector& ShootDirection, bool isHoming);
+	void FireInDirection(const FVector& ShootDirection, bool isHoming, bool isPlayer);
 
 	// called after initial function if bullet is set to homing, controls homing
 	void HomingOnTarget();
@@ -60,7 +59,5 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 		UProjectileMovementComponent* ProjectileMovementComponent;
 
-	//Point Light component
-	UPROPERTY(VisibleAnywhere)
-		UPointLightComponent* PointLightComponent;
+	bool isPlayerProjectile;
 };
