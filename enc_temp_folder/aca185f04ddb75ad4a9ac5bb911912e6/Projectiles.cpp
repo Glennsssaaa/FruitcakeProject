@@ -109,7 +109,7 @@ void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming,
 
 	if (isHoming)
 	{
-		ProjectileMovementComponent->bIsHomingProjectile = true;
+		ProjectileMovementComponent->bIsHomingProjectile = false;
 		ProjectileMovementComponent->HomingTargetComponent = PlayerCharacter->GetRootComponent();
 
 		// if set to homing, wait half a second before targetting enemy

@@ -191,7 +191,7 @@ void APlayerCharacter::DashInputMethod()
 		m_Player_Energy_Points -= 0.05f;
 
 		// shoot player up first to prevent collision with floor during dash
-		LaunchCharacter(FVector(0.f, 0.f, 300.f), false, false);
+		//LaunchCharacter(FVector(0.f, 0.f, 300.f), false, false);
 
 		// set a timer before next function to prevent forward movement from happening too soon
 		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::DashMethod, 0.1f, false);
