@@ -2,9 +2,10 @@
 
 
 #include "PlayerCharacter.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Math/UnrealMathUtility.h" 
 #include "Components/InputComponent.h" 
-#include "Components/CapsuleComponent.h"
 #include "AoeAttackController.h"
 #include "Projectiles.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -37,26 +38,6 @@ APlayerCharacter::APlayerCharacter()
 	AOEAttackClass = AAoeAttackController::StaticClass();
 	ProjectileClass = AProjectiles::StaticClass();
 
-	if (!CameraBoom)
-	{
-		CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-		CameraBoom->TargetArmLength = 0.f;
-		CameraBoom->bInheritPitch = false;
-		CameraBoom->bInheritRoll = false;
-		CameraBoom->bInheritYaw = false;
-
-		CameraBoom->SetupAttachment(RootComponent);
-	}
-
-	if (!Camera)
-	{
-		Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-
-		Camera->SetupAttachment(CameraBoom);
-	}
-
-	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
-
 }
 
 // Called when the game starts or when spawned
@@ -64,6 +45,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	m_Can_Move = true;
+	can_Cast = true;
 }
 
 // Called every frame
@@ -71,26 +53,6 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 //	SetActorRotation(GetActorRotation() += FRotator(1.f));
-
-	if (!UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 1.0f))
-	{
-		float Rotation_Step = m_Rotation_Speed * DeltaTime;
-		if (m_Target_Angle < m_Rotation_Angle)
-		{
-			Rotation_Step *= -1;
-		}
-
-		m_Rotation_Angle += Rotation_Step;
-
-		//Vector(X = cos(angle) * radius, Y = sin(angle) * radius, Z = height)
-		FVector New_Offset = FVector(cosf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * 1000.f, sinf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * 1000.f, 1000.f);
-		CameraBoom->TargetOffset = New_Offset;
-		CameraBoom->SetRelativeRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation() + New_Offset, GetActorLocation()));
-	}
-	else
-	{
-		m_Rotation_Angle = m_Target_Angle;
-	}
 }
 
 // Called to bind functionality to input
@@ -112,9 +74,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &APlayerCharacter::LookUpRateMethod);
 
-	// PERSPECTIVE SWITCHING 
-	PlayerInputComponent->BindAxis("SwitchPerspective", this, &APlayerCharacter::SwitchPerspectiveMethod);
-
 	/* ---------- ACTION MAPPINGS ----------*/
 
 	// DASHING
@@ -123,6 +82,13 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	// AOE test
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::FireAoeAtPlayer);
 	PlayerInputComponent->BindAction("FireBig", IE_Pressed, this, &APlayerCharacter::FireABiggerAoe);
+
+	// PERSPECTIVE SWITCHING 
+	PlayerInputComponent->BindAction("SwitchPerspective", IE_Pressed, this, &APlayerCharacter::SwitchPerspectiveMethod);
+
+
+	// PROJECTILE FIRING
+	PlayerInputComponent->BindAction("CastProjectile", IE_Pressed, this, &APlayerCharacter::CastProjectileMethod);
 
 }
 
@@ -187,7 +153,7 @@ void APlayerCharacter::DashInputMethod()
 		m_Player_Energy_Points -= 0.05f;
 
 		// shoot player up first to prevent collision with floor during dash
-		//LaunchCharacter(FVector(0.f, 0.f, 300.f), false, false);
+		LaunchCharacter(FVector(0.f, 0.f, 300.f), false, false);
 
 		// set a timer before next function to prevent forward movement from happening too soon
 		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::DashMethod, 0.1f, false);
@@ -201,29 +167,92 @@ void APlayerCharacter::DashMethod()
 	const FRotator Yaw(0, Rotation.Yaw, 0);
 	const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
 
-	//disable friction while dashing
-	GetCharacterMovement()->BrakingDecelerationWalking = 0.f;
-	GetCharacterMovement()->BrakingFrictionFactor = 0.f;
-
 	// launch character forward
-	LaunchCharacter(direction * 1000, false, true);
+	LaunchCharacter(direction * 750, false, false);
+
+	// set timer, this is how long before the player can dash again (Half a second)
+	GetWorldTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::ResetDashMethod, .5f, false);
 }
 
 void APlayerCharacter::ResetDashMethod()
 {
 	is_Dashing = false;
-	//enable friction when dash stops
-	GetCharacterMovement()->BrakingDecelerationWalking = 2048.f;
-	GetCharacterMovement()->BrakingFrictionFactor = 2.f;
 }
 
-void APlayerCharacter::SwitchPerspectiveMethod(float value)
+void APlayerCharacter::SwitchPerspectiveMethod()
 {
-	// add axis value (E = 90, Q = -90) to target angle
-	if (UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 0.1f))
+	// do switch perspective fraser 
+}
+
+void APlayerCharacter::CastProjectileMethod()
+{
+	if (can_Cast) 
 	{
-		m_Target_Angle += value;
+		FVector CameraLocation;
+		FRotator CameraRotation;
+		GetActorEyesViewPoint(CameraLocation, CameraRotation);
+
+		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
+		MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
+
+		// Transform MuzzleOffset from camera space to world space.
+		FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+
+		FVector SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z + 50);
+
+		// set rotation of projectile to camera rotation
+		FRotator MuzzleRotation = GetActorRotation();
+
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			SpawnParams.Instigator = GetInstigator();
+
+			// Spawn the projectile at the muzzle.
+			AProjectiles* Projectile = World->SpawnActor<AProjectiles>(ProjectileClass, SpawnLocation, MuzzleRotation, SpawnParams);
+
+			if (Projectile)
+			{
+				// Set the projectile's initial trajectory.
+				FVector LaunchDirection = MuzzleRotation.Vector();
+				Projectile->FireInDirection(LaunchDirection, false, true);
+				can_Cast = false;
+				GetWorldTimerManager().SetTimer(ProjectileTimerHandle, this, &APlayerCharacter::ResetProjecitle, .2f, false);
+			}
+
+		}
 	}
+}
+
+void APlayerCharacter::ResetProjecitle()
+{
+	can_Cast = true;
+}
+
+
+void APlayerCharacter::RotatePlayerToCursor()
+{
+	FHitResult test;
+	FVector MouseLocation;
+	FVector MouseDirection;
+
+	APlayerController* PController = GetWorld()->GetFirstPlayerController();
+
+
+	PController->DeprojectMousePositionToWorld(MouseLocation, MouseDirection);
+
+	FRotator charRotation = GetActorRotation();
+	FRotator targetRotation = MouseDirection.Rotation();
+
+	FRotator newRot = FRotator(charRotation.Pitch, targetRotation.Yaw, charRotation.Roll);
+
+
+	FRotator PlayerRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), MouseLocation);
+
+	SetActorRelativeRotation(newRot);
+
 }
 
 void APlayerCharacter::FireAoeAtPlayer()
@@ -275,63 +304,44 @@ void APlayerCharacter::FireABiggerAoe()
 	if (ProjectileClass)
 	{
 
-		FVector SpawnLocation;
-		FRotator CameraRotation;
-		//	GetActorEyesViewPoint(CameraLocation, CameraRotation);
+	//	FVector SpawnLocation;
+	//	FRotator CameraRotation;
+	//	//	GetActorEyesViewPoint(CameraLocation, CameraRotation);
 
 
-		SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z );
-		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
-		MuzzleOffset.Set(100.0f, 40.0f, 0.0f);
+	//	SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z );
+	//	// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
+	//	MuzzleOffset.Set(100.0f, 40.0f, 0.0f);
 
-		// Transform MuzzleOffset from camera space to world space.
-	//	FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+	//	// Transform MuzzleOffset from camera space to world space.
+	////	FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
 
-		// set rotation of projectile to camera rotation
-		FRotator MuzzleRotation = CameraRotation;
+	//	// set rotation of projectile to camera rotation
+	//	FRotator MuzzleRotation = CameraRotation;
 
-		UWorld* World = GetWorld();
-		if (World)
-		{
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.Owner = this;
-			SpawnParams.Instigator = GetInstigator();
+	//	UWorld* World = GetWorld();
+	//	if (World)
+	//	{
+	//		FActorSpawnParameters SpawnParams;
+	//		SpawnParams.Owner = this;
+	//		SpawnParams.Instigator = GetInstigator();
 
-			// Spawn the projectile at the muzzle.
-			AProjectiles* AOECircle = World->SpawnActor<AProjectiles>(ProjectileClass, SpawnLocation, FRotator(0.f, 0.f, 0.f), SpawnParams);
+	//		// Spawn the projectile at the muzzle.
+	//		AProjectiles* AOECircle = World->SpawnActor<AProjectiles>(ProjectileClass, SpawnLocation, FRotator(0.f, 0.f, 0.f), SpawnParams);
 
-			if (AOECircle)
-			{
-				// Set the projectile's initial trajectory.
-				FVector LaunchDirection = MuzzleRotation.Vector();
-				AOECircle->FireInDirection(LaunchDirection, 1.f);
-				// remove energy
-			}
+	//		if (AOECircle)
+	//		{
+	//			// Set the projectile's initial trajectory.
+	//			FVector LaunchDirection = MuzzleRotation.Vector();
+	//			AOECircle->FireInDirection(LaunchDirection, 1.f);
+	//			// remove energy
+	//		}
 
-		}
+	//	}
 	}
 }
 
 void APlayerCharacter::ReducePlayerHealth()
 {
 	m_Player_Health_Points -= 0.1f;
-}
-
-void APlayerCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (is_Dashing && Cast<UStaticMeshComponent>(OtherComp) != NULL)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Red, TEXT("hit"));
-	}
-}
-
-void APlayerCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
-{
-	if (is_Dashing && Cast<UStaticMeshComponent>(OtherComponent) != NULL)
-	{
-		//GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Red, TEXT("hit"));
-
-		// set timer, this is how long before the player can dash again (Half a second)
-		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::ResetDashMethod, .25f, false);
-	}
 }

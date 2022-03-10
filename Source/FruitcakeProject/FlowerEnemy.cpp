@@ -1,14 +1,15 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "FlowerEnemy.h"
 #include "PlayerCharacter.h"
+#include "Runtime/Engine/Classes/Engine/World.h"
 #include "Projectiles.h"
 #include "AoeAttackController.h"
+#include "FlowerEnemy.h"
 
 // Sets default values
 AFlowerEnemy::AFlowerEnemy()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	if (!CollisionComponent)
@@ -66,7 +67,7 @@ void AFlowerEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-//	FireAtPlayer();
+	//	FireAtPlayer();
 }
 
 void AFlowerEnemy::FireAtPlayer()
@@ -92,8 +93,9 @@ void AFlowerEnemy::FireAtPlayer()
 		UWorld* World = GetWorld();
 		if (World)
 		{
-			FActorSpawnParameters SpawnParams;
+			FActorSpawnParameters SpawnParams = FActorSpawnParameters();
 			SpawnParams.Owner = this;
+			//SpawnParams.Name = FName(TEXT("AFlowerEnemy"));
 			SpawnParams.Instigator = GetInstigator();
 
 			// Spawn the projectile at the muzzle.
@@ -103,9 +105,8 @@ void AFlowerEnemy::FireAtPlayer()
 			{
 				// Set the projectile's initial trajectory.
 				FVector LaunchDirection = MuzzleRotation.Vector();
-				Projectile->FireInDirection(LaunchDirection, true);
+				Projectile->FireInDirection(LaunchDirection, true, false);
 			}
-
 		}
 	}
 }
@@ -148,9 +149,14 @@ void AFlowerEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 	{
 		Destroy();
 	}
+
+	if (OtherComp->GetCollisionProfileName() == TEXT("PlayerAttack"))
+	{
+		OtherActor->Destroy();
+		Destroy();
+	}
 }
 
 void AFlowerEnemy::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 }
-
