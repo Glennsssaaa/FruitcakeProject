@@ -45,6 +45,7 @@ AFlowerEnemy::AFlowerEnemy()
 	CollisionComponent->SetCollisionProfileName(TEXT("Enemy"));
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AFlowerEnemy::OnOverlapBegin);
 	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AFlowerEnemy::OnOverlapEnd);
+
 }
 
 // Called when the game starts or when spawned

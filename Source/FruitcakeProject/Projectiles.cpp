@@ -87,6 +87,7 @@ void AProjectiles::BeginPlay()
 
 	PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
+
 }
 
 // Called every frame
@@ -120,6 +121,7 @@ void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming,
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("PlayerAttack"));
 		ProjectileMeshComponent->BodyInstance.SetCollisionProfileName(TEXT("PlayerAttack"));
 	}
+
 }
 
 
@@ -136,12 +138,14 @@ void AProjectiles::GetTarget()
 
 void AProjectiles::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
+
 	if (OtherActor != this)
 	{
 		// Enemy Projectile Collision Responses
 		if (!isPlayerProjectile && OtherComponent->ComponentHasTag(FName(TEXT("Player"))))
 		{
 			PlayerCharacter->ReducePlayerHealth();
+
 		}
 
 		// Player Projectile Collision Responses
