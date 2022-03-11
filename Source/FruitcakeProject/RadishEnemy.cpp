@@ -14,7 +14,7 @@ ARadishEnemy::ARadishEnemy()
 		// Set Collsion box to be sphere.
 		CollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 		// Set collision box radius.
-		CollisionComponent->SetBoxExtent(FVector(60.f, 60.f, 60.f));
+		CollisionComponent->SetBoxExtent(FVector(75.f, 75.f, 75.f));
 		// Set the root component to be newly created component.
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Enemy"));
 
@@ -68,6 +68,7 @@ ARadishEnemy::ARadishEnemy()
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &ARadishEnemy::OnOverlapBegin);
 	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &ARadishEnemy::OnOverlapEnd);
 
+	CollisionComponent->OnComponentHit.AddDynamic(this, &ARadishEnemy::OnHit);
 	WeakPointMeshComponent->SetCollisionProfileName(TEXT("AICollision"));
 	WeakPointMeshComponent->OnComponentBeginOverlap.AddDynamic(this, &ARadishEnemy::OnWeakPointOverlapBegin);
 
@@ -213,9 +214,23 @@ void ARadishEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 
 		RadishEnemyMeshComponent->SetMaterial(0, red_material);
 	}
+
 	if (OtherComp->ComponentHasTag(FName("Player")) && bStunned == false)
 	{
 		PlayerCharacter->ReducePlayerHealth();
+		bStunned = true;
+		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
+
+		RadishEnemyMeshComponent->SetMaterial(0, red_material);
+	}
+
+	if (OtherComp->GetCollisionProfileName() == TEXT("PlayerAttack") && bStunned == false)
+	{
+		PlayerCharacter->ReducePlayerHealth();
+		bStunned = true;
+		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
+
+		RadishEnemyMeshComponent->SetMaterial(0, red_material);
 	}
 }
 
@@ -229,6 +244,18 @@ void ARadishEnemy::OnWeakPointOverlapBegin(UPrimitiveComponent* OverlappedComp, 
 
 void ARadishEnemy::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+}
+
+void ARadishEnemy::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (OtherComponent->ComponentHasTag(FName("Player")) && bStunned == false)
+	{
+		PlayerCharacter->ReducePlayerHealth();
+		bStunned = true;
+		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
+
+		RadishEnemyMeshComponent->SetMaterial(0, red_material);
+	}
 }
 
 void ARadishEnemy::OnTriggerBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

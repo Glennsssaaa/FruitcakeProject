@@ -17,7 +17,7 @@ AFlowerEnemy::AFlowerEnemy()
 		// Set Collsion box to be sphere.
 		CollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 		// Set collision box radius.
-		CollisionComponent->SetBoxExtent(FVector(60.f, 60.f, 60.f));
+		CollisionComponent->SetBoxExtent(FVector(90.f, 90.f, 90.f));
 		// Set the root component to be newly created component.
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Enemy"));
 
@@ -34,7 +34,8 @@ AFlowerEnemy::AFlowerEnemy()
 		{
 			FlowerEnemyMeshComponent->SetStaticMesh(Mesh.Object);
 		}
-		FlowerEnemyMeshComponent->SetWorldLocation(FVector(0, 0, -50));
+		FlowerEnemyMeshComponent->SetWorldLocation(FVector(0, 0, 0));
+		FlowerEnemyMeshComponent->SetWorldScale3D(FVector(1.3f, 1.3f, 1.3f));
 		// set how long projectile will last in seconds, after this amount of time, projectile is destroyed
 		InitialLifeSpan = 3.f;
 	}

@@ -16,7 +16,7 @@ AMushroomEnemy::AMushroomEnemy()
 		// Set Collsion box to be sphere.
 		CollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 		// Set collision box radius.
-		CollisionComponent->SetBoxExtent(FVector(60.f, 60.f, 60.f));
+		CollisionComponent->SetBoxExtent(FVector(120.f, 120.f, 120.f));
 		// Set the root component to be newly created component.
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Enemy"));
 
@@ -34,6 +34,7 @@ AMushroomEnemy::AMushroomEnemy()
 			MushroomEnemyMeshComponent->SetStaticMesh(Mesh.Object);
 		}
 		MushroomEnemyMeshComponent->SetWorldLocation(FVector(0, 0, -50));
+		MushroomEnemyMeshComponent->SetWorldScale3D(FVector(2.f, 2.f, 2.f));
 		// set how long projectile will last in seconds, after this amount of time, projectile is destroyed
 		InitialLifeSpan = 3.f;
 	}
@@ -160,6 +161,12 @@ void AMushroomEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor*
 {
 	if (OtherComp->ComponentHasTag(FName("PlayerAttack")))
 	{
+		Destroy();
+	}
+
+	if (OtherComp->GetCollisionProfileName() == TEXT("PlayerAttack"))
+	{
+		OtherActor->Destroy();
 		Destroy();
 	}
 }
