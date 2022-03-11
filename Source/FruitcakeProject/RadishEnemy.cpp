@@ -213,7 +213,7 @@ void ARadishEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 
 		RadishEnemyMeshComponent->SetMaterial(0, red_material);
 	}
-	if (OtherComp->ComponentHasTag(FName("PlayerBody")) && bStunned == false)
+	if (OtherComp->ComponentHasTag(FName("Player")) && bStunned == false)
 	{
 		PlayerCharacter->ReducePlayerHealth();
 	}
