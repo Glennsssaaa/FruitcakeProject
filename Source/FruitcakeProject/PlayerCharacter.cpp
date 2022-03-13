@@ -73,15 +73,25 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	//	SetActorRotation(GetActorRotation() += FRotator(1.f));
 
-	if (!UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 1.0f))
+	if (!UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 2.5f))
 	{
 		float Rotation_Step = m_Rotation_Speed * DeltaTime;
-		if (m_Target_Angle < m_Rotation_Angle)
+		if (!m_Rotate_Up)
 		{
 			Rotation_Step *= -1;
 		}
 
 		m_Rotation_Angle += Rotation_Step;
+
+		//check for overflow
+		if (m_Rotation_Angle < 0)
+		{
+			m_Rotation_Angle = 360 + m_Rotation_Angle;
+		}
+		if (m_Rotation_Angle > 360)
+		{
+			m_Rotation_Angle = (int)m_Rotation_Angle % 360;
+		}
 
 		//Vector(X = cos(angle) * radius, Y = sin(angle) * radius, Z = height)
 		FVector New_Offset = FVector(cosf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * 1200.f, sinf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * 1200.f, 1200.f);
@@ -92,6 +102,8 @@ void APlayerCharacter::Tick(float DeltaTime)
 	{
 		m_Rotation_Angle = m_Target_Angle;
 	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Current: %.2f    Target: %.2f"), m_Rotation_Angle, m_Target_Angle));
 }
 
 // Called to bind functionality to input
@@ -149,8 +161,6 @@ void APlayerCharacter::MoveForwardMethod(float value)
 			AddMovementInput(direction, value);
 		}
 	}
-
-
 }
 
 void APlayerCharacter::MoveRightMethod(float value)
@@ -231,10 +241,27 @@ void APlayerCharacter::SwitchPerspectiveMethod(float value)
 	if (UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 0.1f))
 	{
 		m_Target_Angle += value;
+		if (value > 0)
+		{
+			m_Rotate_Up = true;
+		}
+		else
+		{
+			m_Rotate_Up = false;
+		}
+
+		//check for overflow
+		if (m_Target_Angle < 0)
+		{
+			m_Target_Angle = 360 + m_Target_Angle;
+		}
+		if (m_Target_Angle > 360)
+		{
+			m_Target_Angle = (int)m_Target_Angle % 360;
+		}
 	}
 	m_Cam_Rotate = FRotator::ZeroRotator;
 	m_Cam_Rotate.Roll = Camera->GetComponentRotation().Roll;
-
 }
 
 void APlayerCharacter::CastProjectileMethod()
