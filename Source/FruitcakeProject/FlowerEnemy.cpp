@@ -2,13 +2,14 @@
 
 #include "FlowerEnemy.h"
 #include "PlayerCharacter.h"
+#include "Runtime/Engine/Classes/Engine/World.h"
 #include "Projectiles.h"
 #include "AoeAttackController.h"
 
 // Sets default values
 AFlowerEnemy::AFlowerEnemy()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	if (!CollisionComponent)
@@ -16,7 +17,7 @@ AFlowerEnemy::AFlowerEnemy()
 		// Set Collsion box to be sphere.
 		CollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 		// Set collision box radius.
-		CollisionComponent->SetBoxExtent(FVector(60.f, 60.f, 60.f));
+		CollisionComponent->SetBoxExtent(FVector(90.f, 90.f, 90.f));
 		// Set the root component to be newly created component.
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Enemy"));
 
@@ -28,12 +29,13 @@ AFlowerEnemy::AFlowerEnemy()
 	{
 		// sets mesh of projectile to basic sphere mesh, loaded from unreal engine files
 		FlowerEnemyMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProjectileMeshComponent"));
-		static ConstructorHelpers::FObjectFinder<UStaticMesh>Mesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
+		static ConstructorHelpers::FObjectFinder<UStaticMesh>Mesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube'"));
 		if (Mesh.Succeeded())
 		{
 			FlowerEnemyMeshComponent->SetStaticMesh(Mesh.Object);
 		}
-		FlowerEnemyMeshComponent->SetWorldLocation(FVector(0, 0, -50));
+		FlowerEnemyMeshComponent->SetWorldLocation(FVector(0, 0, 0));
+		FlowerEnemyMeshComponent->SetWorldScale3D(FVector(1.3f, 1.3f, 1.3f));
 		// set how long projectile will last in seconds, after this amount of time, projectile is destroyed
 		InitialLifeSpan = 3.f;
 	}
@@ -43,6 +45,7 @@ AFlowerEnemy::AFlowerEnemy()
 	CollisionComponent->SetCollisionProfileName(TEXT("Enemy"));
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AFlowerEnemy::OnOverlapBegin);
 	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AFlowerEnemy::OnOverlapEnd);
+
 }
 
 // Called when the game starts or when spawned
@@ -58,7 +61,7 @@ void AFlowerEnemy::BeginPlay()
 	FlowerAoeAttacks = AAoeAttackController::StaticClass();
 
 	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &AFlowerEnemy::FireAtPlayer, 3.f, true, 0.5f);
-	GetWorldTimerManager().SetTimer(AoeAttackTimerHandle, this, &AFlowerEnemy::FireAoeAtPlayer, 5.f, true, 2.f);
+	//GetWorldTimerManager().SetTimer(AoeAttackTimerHandle, this, &AFlowerEnemy::FireAoeAtPlayer, 5.f, true, 2.f);
 }
 
 // Called every frame
@@ -66,7 +69,7 @@ void AFlowerEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-//	FireAtPlayer();
+	//	FireAtPlayer();
 }
 
 void AFlowerEnemy::FireAtPlayer()
@@ -92,8 +95,9 @@ void AFlowerEnemy::FireAtPlayer()
 		UWorld* World = GetWorld();
 		if (World)
 		{
-			FActorSpawnParameters SpawnParams;
+			FActorSpawnParameters SpawnParams = FActorSpawnParameters();
 			SpawnParams.Owner = this;
+			//SpawnParams.Name = FName(TEXT("AFlowerEnemy"));
 			SpawnParams.Instigator = GetInstigator();
 
 			// Spawn the projectile at the muzzle.
@@ -103,9 +107,8 @@ void AFlowerEnemy::FireAtPlayer()
 			{
 				// Set the projectile's initial trajectory.
 				FVector LaunchDirection = MuzzleRotation.Vector();
-				Projectile->FireInDirection(LaunchDirection, true);
+				Projectile->FireInDirection(LaunchDirection, true, false);
 			}
-
 		}
 	}
 }
@@ -148,9 +151,14 @@ void AFlowerEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 	{
 		Destroy();
 	}
+
+	if (OtherComp->GetCollisionProfileName() == TEXT("PlayerAttack"))
+	{
+		OtherActor->Destroy();
+		Destroy();
+	}
 }
 
 void AFlowerEnemy::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 }
-

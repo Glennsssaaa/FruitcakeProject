@@ -9,6 +9,8 @@
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS(Blueprintable)
@@ -29,7 +31,7 @@ protected:
 		TSubclassOf<class AAoeAttackController> AOEAttackClass;
 
 	// AOE attack spawn class (Vector)
-	UPROPERTY(EditDefaultsOnly, Category = "AOE")
+	UPROPERTY(EditDefaultsOnly, Category = "PlayerProjectiles")
 		TSubclassOf<class AProjectiles> ProjectileClass;
 public:
 	// Called every frame
@@ -59,8 +61,15 @@ public:
 		void ResetDashMethod();
 
 	/* --------- Switch Persepctive ---------- */
-	UFUNCTION()
-		void SwitchPerspectiveMethod();
+	UFUNCTION(BlueprintCallable, Category = "Perspective")
+		void SwitchPerspectiveMethod(float value);
+
+
+	/* --------- Player Projectile Casting ---------- */
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+		void CastProjectileMethod();
+
+	void ResetProjecitle();
 
 	/* --------- Test Functions ---------- */
 	UFUNCTION()
@@ -68,14 +77,18 @@ public:
 
 	UFUNCTION()
 		void FireABiggerAoe();
+
+
+	void RotatePlayerToCursor();
+
+	void ReducePlayerHealth();
+
+
 	UFUNCTION()
+		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-
-
-
-		void ReducePlayerHealth();
-
-
+	UFUNCTION()
+		void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 protected:
 
 	// Gun muzzle offset from the camera location
@@ -85,10 +98,21 @@ protected:
 	float m_Turn_Rate;
 	float m_Look_Rate;
 	bool is_Dashing;
-
+	bool can_Cast;
 
 	// Timer handle for handling dash function
 	FTimerHandle DashTimerHandle;
+	// Timer handle to handle projectile cooldown
+	FTimerHandle ProjectileTimerHandle;
+
+	//Spring Arm Component for controlling the camera
+	UPROPERTY(VisibleDefaultsOnly)
+		USpringArmComponent* CameraBoom;
+
+	//Camera Component
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+		UCameraComponent* Camera;
+
 
 	// Health
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -110,5 +134,15 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool m_Can_Move = true;
+
+	//Perspective
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_Rotation_Angle = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_Target_Angle = 45.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_Rotation_Speed = 200.f;
 
 };

@@ -12,8 +12,8 @@ UCLASS()
 class FRUITCAKEPROJECT_API AProjectiles : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AProjectiles();
 
@@ -21,12 +21,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// initial firing function
-	void FireInDirection(const FVector& ShootDirection, bool isHoming);
+	void FireInDirection(const FVector& ShootDirection, bool isHoming, bool isPlayer);
 
 	// called after initial function if bullet is set to homing, controls homing
 	void HomingOnTarget();
@@ -58,4 +58,6 @@ protected:
 	// Projectile movement component.
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 		UProjectileMovementComponent* ProjectileMovementComponent;
+
+	bool isPlayerProjectile;
 };
