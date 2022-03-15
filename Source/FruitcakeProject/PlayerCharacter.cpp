@@ -73,7 +73,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	//	SetActorRotation(GetActorRotation() += FRotator(1.f));
 
-	if (!UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 1.0f))
+	if (!UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 2.5f))
 	{
 		float Rotation_Step = m_Rotation_Speed * DeltaTime;
 		if (m_Target_Angle < m_Rotation_Angle)
