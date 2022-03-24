@@ -18,25 +18,8 @@ ARadishEnemy::ARadishEnemy()
 		// Set the root component to be newly created component.
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Enemy"));
 
-		RootComponent = CollisionComponent;
+	//	RootComponent = CollisionComponent;
 	}
-
-	// mesh component set up
-	if (!RadishEnemyMeshComponent)
-	{
-		// sets mesh of projectile to basic sphere mesh, loaded from unreal engine files
-		RadishEnemyMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BodyMeshComponent"));
-		static ConstructorHelpers::FObjectFinder<UStaticMesh>Mesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder'"));
-		if (Mesh.Succeeded())
-		{
-			RadishEnemyMeshComponent->SetStaticMesh(Mesh.Object);
-		}
-		RadishEnemyMeshComponent->SetWorldLocation(FVector(0, 0, -50));
-		// set how long projectile will last in seconds, after this amount of time, projectile is destroyed
-		//InitialLifeSpan = 3.f;
-	}
-	RadishEnemyMeshComponent->SetupAttachment(RootComponent);
-	RadishEnemyMeshComponent->SetCollisionProfileName(TEXT("Enemy"));
 
 	if (!WeakPointMeshComponent)
 	{
@@ -202,7 +185,6 @@ void ARadishEnemy::FireAoeAtPlayer()
 void ARadishEnemy::SetStunned()
 {
 	bStunned = false;
-	RadishEnemyMeshComponent->SetMaterial(0, default_material);
 }
 
 void ARadishEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -212,16 +194,15 @@ void ARadishEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 		bStunned = true;
 		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
 
-		RadishEnemyMeshComponent->SetMaterial(0, red_material);
 	}
 
 	if (OtherComp->ComponentHasTag(FName("Player")) && bStunned == false)
 	{
+		FireAoeAtPlayer();
 		PlayerCharacter->ReducePlayerHealth();
-		bStunned = true;
-		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
+		//bStunned = true;
+		//GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
 
-		RadishEnemyMeshComponent->SetMaterial(0, red_material);
 	}
 
 	if (OtherComp->GetCollisionProfileName() == TEXT("PlayerAttack") && bStunned == false)
@@ -230,7 +211,6 @@ void ARadishEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 		bStunned = true;
 		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
 
-		RadishEnemyMeshComponent->SetMaterial(0, red_material);
 	}
 }
 
@@ -254,7 +234,6 @@ void ARadishEnemy::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 		bStunned = true;
 		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
 
-		RadishEnemyMeshComponent->SetMaterial(0, red_material);
 	}
 }
 

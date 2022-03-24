@@ -62,10 +62,6 @@ protected:
 	//Sphere collision component.
 	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
 		UBoxComponent* CollisionComponent;
-	 
-	// Cylinder Body Static Mesh
-	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
-		UStaticMeshComponent* RadishEnemyMeshComponent;
 
 	//Sphere Weak Point Static Mesh
 	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
