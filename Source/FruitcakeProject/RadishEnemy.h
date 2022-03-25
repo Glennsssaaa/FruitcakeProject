@@ -51,6 +51,9 @@ public:
 	UFUNCTION()
 		void OnTriggerEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+		void ReducePlayerHealth();
+
 	UFUNCTION()
 		void SetStunned();
 protected:
@@ -101,4 +104,6 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
 		UMaterial* red_material;
+
+	int health_pool;
 };
