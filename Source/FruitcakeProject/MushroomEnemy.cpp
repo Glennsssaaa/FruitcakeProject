@@ -161,6 +161,7 @@ void AMushroomEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor*
 {
 	if (OtherComp->ComponentHasTag(FName("PlayerAttack")))
 	{
+		SightSphere->OnComponentBeginOverlap.Clear();
 		Destroy();
 	}
 
