@@ -198,7 +198,7 @@ void ARadishEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 
 	if (OtherComp->ComponentHasTag(FName("Player")) && bStunned == false)
 	{
-		FireAoeAtPlayer();
+		//FireAoeAtPlayer();
 		PlayerCharacter->ReducePlayerHealth();
 		//bStunned = true;
 		//GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
@@ -207,8 +207,8 @@ void ARadishEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 
 	if (OtherComp->GetCollisionProfileName() == TEXT("PlayerAttack") && bStunned == false)
 	{
-		PlayerCharacter->ReducePlayerHealth();
-		bStunned = true;
+	//	PlayerCharacter->ReducePlayerHealth();
+		//bStunned = true;
 		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
 
 	}
@@ -230,9 +230,9 @@ void ARadishEnemy::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 {
 	if (OtherComponent->ComponentHasTag(FName("Player")) && bStunned == false)
 	{
-		PlayerCharacter->ReducePlayerHealth();
-		bStunned = true;
-		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
+	//	PlayerCharacter->ReducePlayerHealth();
+	//	bStunned = true;
+		//GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
 
 	}
 }

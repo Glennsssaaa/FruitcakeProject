@@ -7,6 +7,9 @@
 #include "GameFramework/Pawn.h"
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
+
+#include "Components/CapsuleComponent.h"
+
 #include "GameFramework/MovementComponent.h"
 
 #include "RadishEnemy.generated.h"

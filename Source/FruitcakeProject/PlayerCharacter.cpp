@@ -75,7 +75,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 	if (!UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 2.5f))
 	{
-		CameraBoom->bEnableCameraLag = false;
+		//CameraBoom->bEnableCameraLag = false;
 		float Rotation_Step = m_Rotation_Speed * DeltaTime;
 		if (m_Target_Angle < m_Rotation_Angle)
 		{
@@ -92,7 +92,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	else
 	{
 		m_Rotation_Angle = m_Target_Angle;
-		CameraBoom->bEnableCameraLag = true;
+	//	CameraBoom->bEnableCameraLag = true;
 
 	}
 }
