@@ -14,7 +14,7 @@ ARadishEnemy::ARadishEnemy()
 		// Set Collsion box to be sphere.
 		CollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 		// Set collision box radius.
-		CollisionComponent->SetBoxExtent(FVector(75.f, 75.f, 75.f));
+		CollisionComponent->SetBoxExtent(FVector(125.f, 125.f, 100.f));
 		// Set the root component to be newly created component.
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Enemy"));
 
@@ -42,7 +42,7 @@ ARadishEnemy::ARadishEnemy()
 	if (!SightSphere)
 	{
 		SightSphere = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
-		SightSphere->SetSphereRadius(750.f);
+		SightSphere->SetSphereRadius(1000.f);
 
 		SightSphere->SetupAttachment(RootComponent);
 	}
@@ -82,8 +82,9 @@ void ARadishEnemy::BeginPlay()
 	RadishProjectiles = AProjectiles::StaticClass();
 	RadishAoeAttacks = AAoeAttackController::StaticClass();
 
-	//GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &ARadishEnemy::FireAtPlayer, 3.f, true, 0.5f);
-	//GetWorldTimerManager().SetTimer(AoeAttackTimerHandle, this, &ARadishEnemy::FireAoeAtPlayer, 5.f, true, 2.f);
+	health_pool = 1;
+
+
 }
 
 // Called every frame
@@ -91,22 +92,6 @@ void ARadishEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	//	FireAtPlayer();
-
-	//if (bHostile)
-	//{
-	//	GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, TEXT("follow"));
-	//	FVector Direction = PlayerCharacter->GetActorLocation() - GetActorLocation();
-	//	Direction.Normalize();
-
-	//	Direction = Direction * DeltaTime * MovementSpeed;
-
-	//	//SetActorLocation(GetActorLocation() + Direction);
-	//}
-	//else
-	//{
-	//	GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, TEXT("patrol"));
-	//}
 }
 
 void ARadishEnemy::FireAtPlayer()
@@ -191,26 +176,13 @@ void ARadishEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 {
 	if (OtherComp->ComponentHasTag(FName("PlayerAttack")))
 	{
-		bStunned = true;
-		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
+		health_pool--;
+		if (health_pool <= 0) 
+		{
+			// to do - unbind delegates 
 
-	}
-
-	if (OtherComp->ComponentHasTag(FName("Player")) && bStunned == false)
-	{
-		FireAoeAtPlayer();
-		PlayerCharacter->ReducePlayerHealth();
-		//bStunned = true;
-		//GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
-
-	}
-
-	if (OtherComp->GetCollisionProfileName() == TEXT("PlayerAttack") && bStunned == false)
-	{
-		PlayerCharacter->ReducePlayerHealth();
-		bStunned = true;
-		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
-
+			Destroy();
+		}
 	}
 }
 
@@ -230,9 +202,9 @@ void ARadishEnemy::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 {
 	if (OtherComponent->ComponentHasTag(FName("Player")) && bStunned == false)
 	{
-		PlayerCharacter->ReducePlayerHealth();
-		bStunned = true;
-		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
+	//	PlayerCharacter->ReducePlayerHealth();
+	//	bStunned = true;
+		//GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
 
 	}
 }
@@ -251,4 +223,9 @@ void ARadishEnemy::OnTriggerEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	{
 		bHostile = false;
 	}
+}
+
+void ARadishEnemy::ReducePlayerHealth()
+{
+	PlayerCharacter->ReducePlayerHealth();
 }

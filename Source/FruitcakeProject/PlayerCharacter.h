@@ -81,6 +81,7 @@ public:
 
 	void RotatePlayerToCursor();
 
+	UFUNCTION(BlueprintCallable, Category = "HealthFunc")
 	void ReducePlayerHealth();
 
 

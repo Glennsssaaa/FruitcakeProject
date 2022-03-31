@@ -65,6 +65,8 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 	m_Can_Move = true;
 	can_Cast = true;
+
+	CameraBoom->CameraLagSpeed = 5.f;
 }
 
 // Called every frame
