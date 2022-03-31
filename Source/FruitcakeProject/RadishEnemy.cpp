@@ -14,29 +14,12 @@ ARadishEnemy::ARadishEnemy()
 		// Set Collsion box to be sphere.
 		CollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 		// Set collision box radius.
-		CollisionComponent->SetBoxExtent(FVector(75.f, 75.f, 75.f));
+		CollisionComponent->SetBoxExtent(FVector(125.f, 125.f, 100.f));
 		// Set the root component to be newly created component.
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Enemy"));
 
-		RootComponent = CollisionComponent;
+	//	RootComponent = CollisionComponent;
 	}
-
-	// mesh component set up
-	if (!RadishEnemyMeshComponent)
-	{
-		// sets mesh of projectile to basic sphere mesh, loaded from unreal engine files
-		RadishEnemyMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BodyMeshComponent"));
-		static ConstructorHelpers::FObjectFinder<UStaticMesh>Mesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder'"));
-		if (Mesh.Succeeded())
-		{
-			RadishEnemyMeshComponent->SetStaticMesh(Mesh.Object);
-		}
-		RadishEnemyMeshComponent->SetWorldLocation(FVector(0, 0, -50));
-		// set how long projectile will last in seconds, after this amount of time, projectile is destroyed
-		//InitialLifeSpan = 3.f;
-	}
-	RadishEnemyMeshComponent->SetupAttachment(RootComponent);
-	RadishEnemyMeshComponent->SetCollisionProfileName(TEXT("Enemy"));
 
 	if (!WeakPointMeshComponent)
 	{
@@ -59,7 +42,7 @@ ARadishEnemy::ARadishEnemy()
 	if (!SightSphere)
 	{
 		SightSphere = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
-		SightSphere->SetSphereRadius(750.f);
+		SightSphere->SetSphereRadius(1000.f);
 
 		SightSphere->SetupAttachment(RootComponent);
 	}
@@ -99,8 +82,9 @@ void ARadishEnemy::BeginPlay()
 	RadishProjectiles = AProjectiles::StaticClass();
 	RadishAoeAttacks = AAoeAttackController::StaticClass();
 
-	//GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &ARadishEnemy::FireAtPlayer, 3.f, true, 0.5f);
-	//GetWorldTimerManager().SetTimer(AoeAttackTimerHandle, this, &ARadishEnemy::FireAoeAtPlayer, 5.f, true, 2.f);
+	health_pool = 1;
+
+
 }
 
 // Called every frame
@@ -108,22 +92,6 @@ void ARadishEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	//	FireAtPlayer();
-
-	//if (bHostile)
-	//{
-	//	GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, TEXT("follow"));
-	//	FVector Direction = PlayerCharacter->GetActorLocation() - GetActorLocation();
-	//	Direction.Normalize();
-
-	//	Direction = Direction * DeltaTime * MovementSpeed;
-
-	//	//SetActorLocation(GetActorLocation() + Direction);
-	//}
-	//else
-	//{
-	//	GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, TEXT("patrol"));
-	//}
 }
 
 void ARadishEnemy::FireAtPlayer()
@@ -202,35 +170,19 @@ void ARadishEnemy::FireAoeAtPlayer()
 void ARadishEnemy::SetStunned()
 {
 	bStunned = false;
-	RadishEnemyMeshComponent->SetMaterial(0, default_material);
 }
 
 void ARadishEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherComp->ComponentHasTag(FName("PlayerAttack")))
 	{
-		bStunned = true;
-		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
+		health_pool--;
+		if (health_pool <= 0) 
+		{
+			// to do - unbind delegates 
 
-		RadishEnemyMeshComponent->SetMaterial(0, red_material);
-	}
-
-	if (OtherComp->ComponentHasTag(FName("Player")) && bStunned == false)
-	{
-		PlayerCharacter->ReducePlayerHealth();
-		bStunned = true;
-		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
-
-		RadishEnemyMeshComponent->SetMaterial(0, red_material);
-	}
-
-	if (OtherComp->GetCollisionProfileName() == TEXT("PlayerAttack") && bStunned == false)
-	{
-		PlayerCharacter->ReducePlayerHealth();
-		bStunned = true;
-		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
-
-		RadishEnemyMeshComponent->SetMaterial(0, red_material);
+			Destroy();
+		}
 	}
 }
 
@@ -250,11 +202,10 @@ void ARadishEnemy::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 {
 	if (OtherComponent->ComponentHasTag(FName("Player")) && bStunned == false)
 	{
-		PlayerCharacter->ReducePlayerHealth();
-		bStunned = true;
-		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
+	//	PlayerCharacter->ReducePlayerHealth();
+	//	bStunned = true;
+		//GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
 
-		RadishEnemyMeshComponent->SetMaterial(0, red_material);
 	}
 }
 
@@ -272,4 +223,9 @@ void ARadishEnemy::OnTriggerEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	{
 		bHostile = false;
 	}
+}
+
+void ARadishEnemy::ReducePlayerHealth()
+{
+	PlayerCharacter->ReducePlayerHealth();
 }
