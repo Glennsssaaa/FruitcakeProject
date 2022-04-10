@@ -22,7 +22,6 @@ AMushroomEnemy::AMushroomEnemy()
 
 		RootComponent = CollisionComponent;
 	}
-
 	// mesh component set up
 	if (!MushroomEnemyMeshComponent)
 	{
@@ -36,7 +35,7 @@ AMushroomEnemy::AMushroomEnemy()
 		MushroomEnemyMeshComponent->SetWorldLocation(FVector(0, 0, -50));
 		MushroomEnemyMeshComponent->SetWorldScale3D(FVector(2.f, 2.f, 2.f));
 		// set how long projectile will last in seconds, after this amount of time, projectile is destroyed
-		InitialLifeSpan = 3.f;
+		InitialLifeSpan = 6.f;
 	}
 	MushroomEnemyMeshComponent->SetupAttachment(RootComponent);
 	MushroomEnemyMeshComponent->SetCollisionProfileName(TEXT("Enemy"));

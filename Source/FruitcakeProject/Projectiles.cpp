@@ -88,6 +88,7 @@ void AProjectiles::BeginPlay()
 
 }
 
+
 // Called every frame
 void AProjectiles::Tick(float DeltaTime)
 {
@@ -147,11 +148,16 @@ void AProjectiles::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 		}
 
 		// Player Projectile Collision Responses
-		if (isPlayerProjectile)
+		if (isPlayerProjectile && !OtherActor->IsA(APlayerCharacter::StaticClass()))
 		{
-
+			PlayerCharacter->ReducePlayerHealth();
+			Destroy();
 		}
-		Destroy();
 	}
 
 }
+
+void AProjectiles::EditTweet() {
+	
+}
+	

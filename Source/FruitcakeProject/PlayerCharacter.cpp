@@ -3,6 +3,7 @@
 
 #include "PlayerCharacter.h"
 #include "Math/UnrealMathUtility.h" 
+#include "Math/Vector2D.h" 
 #include "Components/InputComponent.h" 
 #include "Components/CapsuleComponent.h"
 #include "AoeAttackController.h"
@@ -65,8 +66,11 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 	m_Can_Move = true;
 	can_Cast = true;
-
+	m_Camera_Zoom_Value = 950.f;
 	CameraBoom->CameraLagSpeed = 5.f;
+	GetCharacterMovement()->RotationRate = FRotator(2160.f, 2160.f, 2160.f);
+	m_Dash_Distance = 600.f;
+	m_Dash_Speed = 4.f;
 }
 
 // Called every frame
@@ -87,7 +91,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 		m_Rotation_Angle += Rotation_Step;
 
 		//Vector(X = cos(angle) * radius, Y = sin(angle) * radius, Z = height)
-		FVector New_Offset = FVector(cosf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * 1200.f, sinf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * 1200.f, 1200.f);
+		FVector New_Offset = FVector(cosf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * m_Camera_Zoom_Value, sinf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * m_Camera_Zoom_Value, m_Camera_Zoom_Value);
 		CameraBoom->TargetOffset = New_Offset;
 		CameraBoom->SetRelativeRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation() + New_Offset, GetActorLocation()));
 	}
@@ -113,8 +117,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::MoveRightMethod);
 
 	// PITCH, YAW, TURN AT AND LOOK AT RATES
-//	PlayerInputComponent->BindAxis("TurnRate", this, &APlayerCharacter::TurnAtRateMethod);
-//	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("TurnRate", this, &APlayerCharacter::TurnAtRateMethod);
+	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &APlayerCharacter::LookUpRateMethod);
 
@@ -123,12 +127,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	// DASHING
 	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &APlayerCharacter::DashInputMethod);
 
-	// AOE test
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerCharacter::FireAoeAtPlayer);
-	PlayerInputComponent->BindAction("FireBig", IE_Pressed, this, &APlayerCharacter::FireABiggerAoe);
-
 	// PERSPECTIVE SWITCHING 
-//	PlayerInputComponent->BindAxis("SwitchPerspective", this, &APlayerCharacter::SwitchPerspectiveMethod);
+	PlayerInputComponent->BindAxis("SwitchPerspective", this, &APlayerCharacter::SwitchPerspectiveMethod);
 
 	// PROJECTILE FIRING
 	PlayerInputComponent->BindAction("CastProjectile", IE_Pressed, this, &APlayerCharacter::CastProjectileMethod);
@@ -154,7 +154,6 @@ void APlayerCharacter::MoveForwardMethod(float value)
 			AddMovementInput(direction, value);
 		}
 	}
-
 
 }
 
@@ -218,7 +217,7 @@ void APlayerCharacter::DashMethod()
 	// set timer, this is how long before the player can dash again (Half a second)
 	GetWorldTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::ResetDashMethod, .5f, false);
 	// launch character forward
-	LaunchCharacter(direction * 1000, false, true);
+	LaunchCharacter(direction * 700, false, true);
 }
 
 void APlayerCharacter::ResetDashMethod()
@@ -289,6 +288,36 @@ void APlayerCharacter::ResetProjecitle()
 	can_Cast = true;
 }
 
+void APlayerCharacter::ImprovedDashFunctionPart1()
+{
+
+}
+
+bool APlayerCharacter::ImprovedDashFunction() {
+	// get forward vector
+	const FRotator Rotation = GetActorRotation();
+	const FRotator Yaw(0, Rotation.Yaw, 0);
+	const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
+	
+	m_Predicted_Location = (direction * m_Dash_Distance) + m_Base_Location;
+
+	FHitResult SweepHitResult;
+
+	// set actor location using interpolation and check if there is any collision in the way
+	SetActorLocation(FMath::VInterpTo(GetActorLocation(), m_Predicted_Location, GetWorld()->GetDeltaSeconds(), m_Dash_Speed), true, &SweepHitResult);
+	
+	FVector2D ActorLocation2D = FVector2D(GetActorLocation().X, GetActorLocation().Y);
+	FVector2D PredictedLocation2D = FVector2D(m_Predicted_Location.X, m_Predicted_Location.Y);
+
+	if (SweepHitResult.bBlockingHit || ActorLocation2D.Equals(PredictedLocation2D, 100.f))
+	{
+		EnableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		GetWorld()->GetTimerManager().ClearTimer(t_Dash_Function);
+		return true;
+	}
+	return false;
+}	
+
 
 void APlayerCharacter::RotatePlayerToCursor()
 {
@@ -297,7 +326,6 @@ void APlayerCharacter::RotatePlayerToCursor()
 	FVector MouseDirection;
 
 	APlayerController* PController = GetWorld()->GetFirstPlayerController();
-
 
 	PController->DeprojectMousePositionToWorld(MouseLocation, MouseDirection);
 
@@ -313,92 +341,6 @@ void APlayerCharacter::RotatePlayerToCursor()
 
 }
 
-void APlayerCharacter::FireAoeAtPlayer()
-{
-	// ensure aoe class is initialised
-
-	if (AOEAttackClass)
-	{
-
-		FVector SpawnLocation;
-		FRotator CameraRotation;
-		//	GetActorEyesViewPoint(CameraLocation, CameraRotation);
-
-
-		SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z - 100);
-		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
-		MuzzleOffset.Set(100.0f, 40.0f, 0.0f);
-
-		// Transform MuzzleOffset from camera space to world space.
-	//	FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
-
-		// set rotation of projectile to camera rotation
-		FRotator MuzzleRotation = CameraRotation;
-
-		UWorld* World = GetWorld();
-		if (World)
-		{
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.Owner = this;
-			SpawnParams.Instigator = GetInstigator();
-
-			// Spawn the projectile at the muzzle.
-			AAoeAttackController* AOECircle = World->SpawnActor<AAoeAttackController>(AOEAttackClass, SpawnLocation, FRotator(0.f, 0.f, 0.f), SpawnParams);
-
-			if (AOECircle)
-			{
-				// Set the projectile's initial trajectory.
-				FVector LaunchDirection = MuzzleRotation.Vector();
-				AOECircle->FireAtLocation(LaunchDirection, 1.f);
-				// remove energy
-			}
-
-		}
-	}
-}
-
-void APlayerCharacter::FireABiggerAoe()
-{
-	if (ProjectileClass)
-	{
-
-		//	FVector SpawnLocation;
-		//	FRotator CameraRotation;
-		//	//	GetActorEyesViewPoint(CameraLocation, CameraRotation);
-
-
-		//	SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z );
-		//	// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
-		//	MuzzleOffset.Set(100.0f, 40.0f, 0.0f);
-
-		//	// Transform MuzzleOffset from camera space to world space.
-		////	FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
-
-		//	// set rotation of projectile to camera rotation
-		//	FRotator MuzzleRotation = CameraRotation;
-
-		//	UWorld* World = GetWorld();
-		//	if (World)
-		//	{
-		//		FActorSpawnParameters SpawnParams;
-		//		SpawnParams.Owner = this;
-		//		SpawnParams.Instigator = GetInstigator();
-
-		//		// Spawn the projectile at the muzzle.
-		//		AProjectiles* AOECircle = World->SpawnActor<AProjectiles>(ProjectileClass, SpawnLocation, FRotator(0.f, 0.f, 0.f), SpawnParams);
-
-		//		if (AOECircle)
-		//		{
-		//			// Set the projectile's initial trajectory.
-		//			FVector LaunchDirection = MuzzleRotation.Vector();
-		//			AOECircle->FireInDirection(LaunchDirection, 1.f);
-		//			// remove energy
-		//		}
-
-		//	}
-	}
-}
-
 void APlayerCharacter::ReducePlayerHealth()
 {
 	m_Player_Health_Points -= 0.1f;
@@ -411,6 +353,8 @@ void APlayerCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActo
 		GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Red, TEXT("hit"));
 	}
 }
+
+
 
 void APlayerCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
