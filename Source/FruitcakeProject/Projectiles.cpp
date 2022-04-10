@@ -36,8 +36,8 @@ AProjectiles::AProjectiles()
 		ProjectileMovementComponent->SetUpdatedComponent(CollisionComponent);
 
 		// set up projecitle initial and maximum speeds
-		ProjectileMovementComponent->InitialSpeed = 500.0f;
-		ProjectileMovementComponent->MaxSpeed = 500.0f;
+		ProjectileMovementComponent->InitialSpeed = 1500.0f;
+		ProjectileMovementComponent->MaxSpeed = 1500.0f;
 
 		ProjectileMovementComponent->bRotationFollowsVelocity = true;
 		ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
