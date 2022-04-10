@@ -66,11 +66,11 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 	m_Can_Move = true;
 	can_Cast = true;
-	m_Camera_Zoom_Value = 950.f;
+	m_Camera_Zoom_Value = 1050.f;
 	CameraBoom->CameraLagSpeed = 5.f;
 	GetCharacterMovement()->RotationRate = FRotator(2160.f, 2160.f, 2160.f);
 	m_Dash_Distance = 600.f;
-	m_Dash_Speed = 4.f;
+	m_Dash_Speed = 6.f;
 }
 
 // Called every frame
@@ -295,6 +295,7 @@ void APlayerCharacter::ImprovedDashFunctionPart1()
 
 bool APlayerCharacter::ImprovedDashFunction() {
 	// get forward vector
+	CameraBoom->bEnableCameraLag = false;
 	const FRotator Rotation = GetActorRotation();
 	const FRotator Yaw(0, Rotation.Yaw, 0);
 	const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
@@ -313,6 +314,7 @@ bool APlayerCharacter::ImprovedDashFunction() {
 	{
 		EnableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 		GetWorld()->GetTimerManager().ClearTimer(t_Dash_Function);
+		CameraBoom->bEnableCameraLag = true;
 		return true;
 	}
 	return false;
