@@ -16,8 +16,8 @@ APlayerCharacter::APlayerCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// stuff that you should do
-	m_Look_Rate = 45.f;
-	m_Turn_Rate = 45.f;
+	m_Look_Rate = 500.f;
+	m_Turn_Rate = 500.f;
 
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
@@ -94,7 +94,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 		}
 
 		//Vector(X = cos(angle) * radius, Y = sin(angle) * radius, Z = height)
-		FVector New_Offset = FVector(cosf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * 1200.f, sinf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * 1200.f, 1200.f);
+		FVector New_Offset = FVector(cosf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * m_Camera_Radius, sinf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * m_Camera_Radius, m_Camera_Height);
 		CameraBoom->TargetOffset = New_Offset;
 		CameraBoom->SetRelativeRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation() + New_Offset, GetActorLocation()));
 	}
@@ -103,7 +103,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 		m_Rotation_Angle = m_Target_Angle;
 	}
 
-	GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Current: %.2f    Target: %.2f"), m_Rotation_Angle, m_Target_Angle));
+	//GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Current: %.2f    Target: %.2f"), m_Rotation_Angle, m_Target_Angle));
 }
 
 // Called to bind functionality to input
@@ -150,16 +150,16 @@ void APlayerCharacter::MoveForwardMethod(float value)
 	// W and S Movement
 	if (Controller != NULL && value != 0)
 	{
-		if (m_Can_Move)
-		{
+		//if (m_Can_Move)
+		//{
 			const FRotator Rotation = m_Cam_Rotate;
 			const FRotator Yaw(0, Rotation.Yaw, 0);
 
 			// gets forward vector
 			const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
 
-			AddMovementInput(direction, value);
-		}
+			AddMovementInput(direction, value * 500.f);
+		//}
 	}
 }
 
@@ -168,16 +168,16 @@ void APlayerCharacter::MoveRightMethod(float value)
 	// A and D movement
 	if (Controller != NULL && value != 0)
 	{
-		if (m_Can_Move)
-		{
+		//if (m_Can_Move)
+		//{
 			const FRotator Rotation = m_Cam_Rotate;
 			const FRotator Yaw(0, Rotation.Yaw, 0);
 
 			// gets right vector
 			const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::Y);
 
-			AddMovementInput(direction, value);
-		}
+			AddMovementInput(direction, value * 500.f);
+		//}
 	}
 }
 
