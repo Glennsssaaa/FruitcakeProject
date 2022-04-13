@@ -56,7 +56,7 @@ APlayerCharacter::APlayerCharacter()
 	}
 
 	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
-
+	
 }
 
 // Called when the game starts or when spawned
@@ -145,14 +145,18 @@ void APlayerCharacter::MoveForwardMethod(float value)
 	{
 		if (m_Can_Move)
 		{
-			const FRotator Rotation = m_Cam_Rotate;
-			const FRotator Yaw(0, Rotation.Yaw, 0);
+				const FRotator Rotation = m_Cam_Rotate;
+				const FRotator Yaw(0, Rotation.Yaw, 0);
 
-			// gets forward vector
-			const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
+				// gets forward vector
+				const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
 
-			AddMovementInput(direction, value);
+				AddMovementInput(direction, value);
 		}
+		forwardDir = value;
+	}
+	else {
+		forwardDir = 0;
 	}
 
 
@@ -165,13 +169,13 @@ void APlayerCharacter::MoveRightMethod(float value)
 	{
 		if (m_Can_Move)
 		{
-			const FRotator Rotation = m_Cam_Rotate;
-			const FRotator Yaw(0, Rotation.Yaw, 0);
+				const FRotator Rotation = m_Cam_Rotate;
+				const FRotator Yaw(0, Rotation.Yaw, 0);
 
-			// gets right vector
-			const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::Y);
+				// gets right vector
+				const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::Y);
 
-			AddMovementInput(direction, value);
+				AddMovementInput(direction, value);
 		}
 	}
 }
@@ -189,7 +193,7 @@ void APlayerCharacter::LookUpRateMethod(float value)
 
 void APlayerCharacter::DashInputMethod()
 {
-	if (Controller != NULL && !is_Dashing)
+	if (Controller != NULL && !is_Dashing && m_Can_Move)
 	{
 		is_Dashing = true;
 		// remove energy
@@ -244,7 +248,7 @@ void APlayerCharacter::SwitchPerspectiveMethod(float value)
 
 void APlayerCharacter::CastProjectileMethod()
 {
-	if (can_Cast)
+	if (can_Cast && m_Can_Move)
 	{
 		FVector CameraLocation;
 		FRotator CameraRotation;
@@ -317,7 +321,7 @@ void APlayerCharacter::FireAoeAtPlayer()
 {
 	// ensure aoe class is initialised
 
-	if (AOEAttackClass)
+	if (AOEAttackClass && m_Can_Move)
 	{
 
 		FVector SpawnLocation;
