@@ -56,7 +56,7 @@ APlayerCharacter::APlayerCharacter()
 	}
 
 	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
-
+	
 }
 
 // Called when the game starts or when spawned
@@ -145,13 +145,13 @@ void APlayerCharacter::MoveForwardMethod(float value)
 	{
 		if (m_Can_Move)
 		{
-			const FRotator Rotation = m_Cam_Rotate;
-			const FRotator Yaw(0, Rotation.Yaw, 0);
+				const FRotator Rotation = m_Cam_Rotate;
+				const FRotator Yaw(0, Rotation.Yaw, 0);
 
-			// gets forward vector
-			const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
+				// gets forward vector
+				const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
 
-			AddMovementInput(direction, value);
+				AddMovementInput(direction, value);
 		}
 	}
 
@@ -165,13 +165,13 @@ void APlayerCharacter::MoveRightMethod(float value)
 	{
 		if (m_Can_Move)
 		{
-			const FRotator Rotation = m_Cam_Rotate;
-			const FRotator Yaw(0, Rotation.Yaw, 0);
+				const FRotator Rotation = m_Cam_Rotate;
+				const FRotator Yaw(0, Rotation.Yaw, 0);
 
-			// gets right vector
-			const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::Y);
+				// gets right vector
+				const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::Y);
 
-			AddMovementInput(direction, value);
+				AddMovementInput(direction, value);
 		}
 	}
 }
