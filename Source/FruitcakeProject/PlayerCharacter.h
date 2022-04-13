@@ -145,4 +145,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float m_Rotation_Speed = 200.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float forwardDir = 0.f;
 };

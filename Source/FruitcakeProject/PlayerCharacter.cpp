@@ -153,6 +153,10 @@ void APlayerCharacter::MoveForwardMethod(float value)
 
 				AddMovementInput(direction, value);
 		}
+		forwardDir = value;
+	}
+	else {
+		forwardDir = 0;
 	}
 
 
@@ -189,7 +193,7 @@ void APlayerCharacter::LookUpRateMethod(float value)
 
 void APlayerCharacter::DashInputMethod()
 {
-	if (Controller != NULL && !is_Dashing)
+	if (Controller != NULL && !is_Dashing && m_Can_Move)
 	{
 		is_Dashing = true;
 		// remove energy
@@ -244,7 +248,7 @@ void APlayerCharacter::SwitchPerspectiveMethod(float value)
 
 void APlayerCharacter::CastProjectileMethod()
 {
-	if (can_Cast)
+	if (can_Cast && m_Can_Move)
 	{
 		FVector CameraLocation;
 		FRotator CameraRotation;
@@ -317,7 +321,7 @@ void APlayerCharacter::FireAoeAtPlayer()
 {
 	// ensure aoe class is initialised
 
-	if (AOEAttackClass)
+	if (AOEAttackClass && m_Can_Move)
 	{
 
 		FVector SpawnLocation;
