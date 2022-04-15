@@ -39,7 +39,8 @@ public:
 		void OnTriggerBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 		void OnTriggerEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
+	UFUNCTION(BlueprintCallable, Category = "EnemyMovement")
+		void JumpTowardsPlayer();
 protected:
 
 	// pointer to player character

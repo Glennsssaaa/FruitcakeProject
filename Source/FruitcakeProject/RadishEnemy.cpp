@@ -212,6 +212,7 @@ void ARadishEnemy::OnAttackRangeOverlapEnd(UPrimitiveComponent* OverlappedComp, 
 
 void ARadishEnemy::CheckIfStillOverlapping()
 {
+	// Checks if enemy attack range component is still overlapping with player, if so, attack again, with a delay of half a second
 	if (AttackRange->IsOverlappingActor(PlayerCharacter) && !b_attack_delay_active) 
 	{
 		bAttack = true;
@@ -231,7 +232,6 @@ void ARadishEnemy::SetAttackDelayBool()
 
 void ARadishEnemy::ReducePlayerHealth()
 {
-	PlayerCharacter->ReducePlayerHealth();
+	PlayerCharacter->TakeDamage(10.f, FDamageEvent(), nullptr, this);
 	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &ARadishEnemy::CheckIfStillOverlapping, 0.1f, false, f_attack_delay_time);
-
 }

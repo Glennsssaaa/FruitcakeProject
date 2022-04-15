@@ -78,7 +78,7 @@ void AMushroomEnemy::BeginPlay()
 void AMushroomEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	JumpTowardsPlayer();
 	//	FireAtPlayer();
 }
 
@@ -154,6 +154,18 @@ void AMushroomEnemy::FireAoeAtPlayer()
 
 		}
 	}
+}
+
+void AMushroomEnemy::JumpTowardsPlayer() {
+	FVector PlayerLocation = PlayerCharacter->GetActorLocation();
+	FVector EnemyLocation = GetActorLocation();
+	FVector JumpDirection = PlayerLocation - EnemyLocation;
+	JumpDirection.Normalize();
+	JumpDirection *= 3;
+	SetActorLocation(GetActorLocation() + JumpDirection);
+
+
+	
 }
 
 void AMushroomEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

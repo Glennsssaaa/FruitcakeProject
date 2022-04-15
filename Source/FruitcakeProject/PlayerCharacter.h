@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "HealthComponent.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS(Blueprintable)
@@ -53,14 +54,12 @@ public:
 
 	/* --------- Dash Functions ---------- */
 
-	// Basic, needs to be changed 
-	UFUNCTION()
-		void DashInputMethod();
-	void DashMethod();
-	UFUNCTION()
-		void ResetDashMethod();
-
-	/* --------- Switch Persepctive ---------- */
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+		bool ImprovedDashFunction();
+	
+	void DashCooldown();
+	
+	/* --------- Switch Perspecctive ---------- */
 	UFUNCTION(BlueprintCallable, Category = "Perspective")
 		void SwitchPerspectiveMethod(float value);
 
@@ -76,11 +75,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HealthFunc")
 	void ReducePlayerHealth();
 
-	UFUNCTION(BlueprintCallable, Category = "Movement")
-		void ImprovedDashFunctionPart1();
 
-	UFUNCTION(BlueprintCallable, Category = "Movement")
-		bool ImprovedDashFunction();
+
 
 	UFUNCTION()
 		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -96,6 +92,8 @@ protected:
 	float m_Turn_Rate;
 	float m_Look_Rate;
 	bool is_Dashing;
+	bool can_Dash;
+
 	bool can_Cast;
 
 	// Timer handle for handling dash function
@@ -112,12 +110,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float m_Dash_Speed;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float m_Dash_Cooldown;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector m_Base_Location;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector m_Predicted_Location;
 	
 	//Spring Arm Component for controlling the camera
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USpringArmComponent* CameraBoom;
 
 	//Camera Component
@@ -130,6 +130,9 @@ protected:
 		float m_Player_Health_Points = 1.f;
 	float m_Max_Health = 1.f;
 
+	// Health Component
+	
+	
 	// Energy
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float m_Player_Energy_Points = 1.f;
