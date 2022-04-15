@@ -81,6 +81,7 @@ public:
 
 	void RotatePlayerToCursor();
 
+	UFUNCTION(BlueprintCallable, Category = "HealthFunc")
 	void ReducePlayerHealth();
 
 
@@ -146,12 +147,5 @@ protected:
 		float m_Rotation_Speed = 200.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool m_Rotate_Up;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float m_Camera_Radius = 1200.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float m_Camera_Height = 1200.f;
-
+		float forwardDir = 0.f;
 };

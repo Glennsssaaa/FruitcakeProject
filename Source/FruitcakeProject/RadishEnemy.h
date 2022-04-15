@@ -7,6 +7,9 @@
 #include "GameFramework/Pawn.h"
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
+
+#include "Components/CapsuleComponent.h"
+
 #include "GameFramework/MovementComponent.h"
 
 #include "RadishEnemy.generated.h"
@@ -48,6 +51,9 @@ public:
 	UFUNCTION()
 		void OnTriggerEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+		void ReducePlayerHealth();
+
 	UFUNCTION()
 		void SetStunned();
 protected:
@@ -62,10 +68,6 @@ protected:
 	//Sphere collision component.
 	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
 		UBoxComponent* CollisionComponent;
-	 
-	// Cylinder Body Static Mesh
-	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
-		UStaticMeshComponent* RadishEnemyMeshComponent;
 
 	//Sphere Weak Point Static Mesh
 	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
@@ -102,4 +104,6 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
 		UMaterial* red_material;
+
+	int health_pool;
 };

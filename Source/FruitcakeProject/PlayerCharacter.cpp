@@ -16,8 +16,8 @@ APlayerCharacter::APlayerCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// stuff that you should do
-	m_Look_Rate = 500.f;
-	m_Turn_Rate = 500.f;
+	m_Look_Rate = 45.f;
+	m_Turn_Rate = 45.f;
 
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
@@ -56,7 +56,7 @@ APlayerCharacter::APlayerCharacter()
 	}
 
 	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
-
+	
 }
 
 // Called when the game starts or when spawned
@@ -66,7 +66,7 @@ void APlayerCharacter::BeginPlay()
 	m_Can_Move = true;
 	can_Cast = true;
 
-	ProjectileClass = AProjectiles::StaticClass();
+	CameraBoom->CameraLagSpeed = 5.f;
 }
 
 // Called every frame
@@ -77,35 +77,26 @@ void APlayerCharacter::Tick(float DeltaTime)
 
 	if (!UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 2.5f))
 	{
+		CameraBoom->bEnableCameraLag = false;
 		float Rotation_Step = m_Rotation_Speed * DeltaTime;
-		if (!m_Rotate_Up)
+		if (m_Target_Angle < m_Rotation_Angle)
 		{
 			Rotation_Step *= -1;
 		}
 
 		m_Rotation_Angle += Rotation_Step;
 
-		//check for overflow
-		if (m_Rotation_Angle < 0)
-		{
-			m_Rotation_Angle = 360 + m_Rotation_Angle;
-		}
-		if (m_Rotation_Angle > 360)
-		{
-			m_Rotation_Angle = (int)m_Rotation_Angle % 360;
-		}
-
 		//Vector(X = cos(angle) * radius, Y = sin(angle) * radius, Z = height)
-		FVector New_Offset = FVector(cosf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * m_Camera_Radius, sinf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * m_Camera_Radius, m_Camera_Height);
+		FVector New_Offset = FVector(cosf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * 1200.f, sinf(UKismetMathLibrary::DegreesToRadians(m_Rotation_Angle)) * 1200.f, 1200.f);
 		CameraBoom->TargetOffset = New_Offset;
 		CameraBoom->SetRelativeRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation() + New_Offset, GetActorLocation()));
 	}
 	else
 	{
 		m_Rotation_Angle = m_Target_Angle;
-	}
+		CameraBoom->bEnableCameraLag = true;
 
-	//GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Red, FString::Printf(TEXT("Current: %.2f    Target: %.2f"), m_Rotation_Angle, m_Target_Angle));
+	}
 }
 
 // Called to bind functionality to input
@@ -152,17 +143,23 @@ void APlayerCharacter::MoveForwardMethod(float value)
 	// W and S Movement
 	if (Controller != NULL && value != 0)
 	{
-		//if (m_Can_Move)
-		//{
-			const FRotator Rotation = m_Cam_Rotate;
-			const FRotator Yaw(0, Rotation.Yaw, 0);
+		if (m_Can_Move)
+		{
+				const FRotator Rotation = m_Cam_Rotate;
+				const FRotator Yaw(0, Rotation.Yaw, 0);
 
-			// gets forward vector
-			const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
+				// gets forward vector
+				const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
 
-			AddMovementInput(direction, value * 500.f);
-		//}
+				AddMovementInput(direction, value);
+		}
+		forwardDir = value;
 	}
+	else {
+		forwardDir = 0;
+	}
+
+
 }
 
 void APlayerCharacter::MoveRightMethod(float value)
@@ -170,16 +167,16 @@ void APlayerCharacter::MoveRightMethod(float value)
 	// A and D movement
 	if (Controller != NULL && value != 0)
 	{
-		//if (m_Can_Move)
-		//{
-			const FRotator Rotation = m_Cam_Rotate;
-			const FRotator Yaw(0, Rotation.Yaw, 0);
+		if (m_Can_Move)
+		{
+				const FRotator Rotation = m_Cam_Rotate;
+				const FRotator Yaw(0, Rotation.Yaw, 0);
 
-			// gets right vector
-			const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::Y);
+				// gets right vector
+				const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::Y);
 
-			AddMovementInput(direction, value * 500.f);
-		//}
+				AddMovementInput(direction, value);
+		}
 	}
 }
 
@@ -196,7 +193,7 @@ void APlayerCharacter::LookUpRateMethod(float value)
 
 void APlayerCharacter::DashInputMethod()
 {
-	if (Controller != NULL && !is_Dashing)
+	if (Controller != NULL && !is_Dashing && m_Can_Move)
 	{
 		is_Dashing = true;
 		// remove energy
@@ -218,7 +215,7 @@ void APlayerCharacter::DashMethod()
 	const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
 
 
-	//disable friction while dashing
+	// disable friction while dashing
 	GetCharacterMovement()->BrakingDecelerationWalking = 0.f;
 	GetCharacterMovement()->BrakingFrictionFactor = 0.f;
 
@@ -243,32 +240,15 @@ void APlayerCharacter::SwitchPerspectiveMethod(float value)
 	if (UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 0.1f))
 	{
 		m_Target_Angle += value;
-		if (value > 0)
-		{
-			m_Rotate_Up = true;
-		}
-		else
-		{
-			m_Rotate_Up = false;
-		}
-
-		//check for overflow
-		if (m_Target_Angle < 0)
-		{
-			m_Target_Angle = 360 + m_Target_Angle;
-		}
-		if (m_Target_Angle > 360)
-		{
-			m_Target_Angle = (int)m_Target_Angle % 360;
-		}
 	}
 	m_Cam_Rotate = FRotator::ZeroRotator;
 	m_Cam_Rotate.Roll = Camera->GetComponentRotation().Roll;
+
 }
 
 void APlayerCharacter::CastProjectileMethod()
 {
-	if (can_Cast)
+	if (can_Cast && m_Can_Move)
 	{
 		FVector CameraLocation;
 		FRotator CameraRotation;
@@ -294,7 +274,6 @@ void APlayerCharacter::CastProjectileMethod()
 
 			// Spawn the projectile at the muzzle.
 			AProjectiles* Projectile = World->SpawnActor<AProjectiles>(ProjectileClass, SpawnLocation, MuzzleRotation, SpawnParams);
-			//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("works"));
 
 			if (Projectile)
 			{
@@ -342,7 +321,7 @@ void APlayerCharacter::FireAoeAtPlayer()
 {
 	// ensure aoe class is initialised
 
-	if (AOEAttackClass)
+	if (AOEAttackClass && m_Can_Move)
 	{
 
 		FVector SpawnLocation;
