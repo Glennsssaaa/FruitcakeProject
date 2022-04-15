@@ -146,6 +146,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float m_Rotation_Speed = 200.f;
 
+<<<<<<< HEAD
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float forwardDir = 0.f;
+=======
+>>>>>>> parent of 970a859 (Fire VFX and Push Box)
 };
