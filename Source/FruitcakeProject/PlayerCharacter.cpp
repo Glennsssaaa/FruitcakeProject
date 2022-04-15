@@ -65,6 +65,8 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 	m_Can_Move = true;
 	can_Cast = true;
+
+	ProjectileClass = AProjectiles::StaticClass();
 }
 
 // Called every frame
@@ -292,6 +294,7 @@ void APlayerCharacter::CastProjectileMethod()
 
 			// Spawn the projectile at the muzzle.
 			AProjectiles* Projectile = World->SpawnActor<AProjectiles>(ProjectileClass, SpawnLocation, MuzzleRotation, SpawnParams);
+			//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("works"));
 
 			if (Projectile)
 			{
