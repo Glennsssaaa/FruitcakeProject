@@ -63,7 +63,7 @@ AProjectiles::AProjectiles()
 	}
 
 	// Load material for projectile from unreal files
-	static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("Material'/Game/Fruitcake_Game/Materials/ProjectileM.ProjectileM'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("Material'/Game/Fruitcake_Game/Materials/Material_GuideLaser.Material_GuideLaser'"));
 	if (Material.Succeeded())
 	{
 		ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
@@ -71,12 +71,29 @@ AProjectiles::AProjectiles()
 	ProjectileMeshComponent->SetMaterial(0, ProjectileMaterialInstance);
 	ProjectileMeshComponent->BodyInstance.SetCollisionProfileName(TEXT("EnemyProjectile"));
 
-	ProjectileMeshComponent->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
+	ProjectileMeshComponent->SetRelativeScale3D(FVector(0.1f, 0.1f, 0.1f));
 	ProjectileMeshComponent->SetupAttachment(RootComponent);
 
 	// Event called when component hits something.
 	CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("EnemyProjectile"));
 	CollisionComponent->OnComponentHit.AddDynamic(this, &AProjectiles::OnHit);
+
+	if (!ProjectileParticleEffect)
+	{
+		ProjectileParticleEffect = CreateDefaultSubobject<UParticleSystem>(TEXT("ParticleEffect"));
+		static ConstructorHelpers::FObjectFinder<UParticleSystem>Particle(TEXT("ParticleSystem'/Game/Fruitcake_Game/VFX/ProjectileEffect.ProjectileEffect'"));
+		if (Particle.Succeeded())
+		{
+			ProjectileParticleEffect = Particle.Object;
+		}
+	}
+
+	if (!PointLightComponent)
+	{
+		PointLightComponent = CreateDefaultSubobject<UPointLightComponent>(TEXT("PointLight"));
+		PointLightComponent->SetupAttachment(RootComponent);
+		PointLightComponent->SetLightColor(FLinearColor(0.f, 0.5f, 1.f, 1.f));
+	}
 
 }
 
@@ -121,6 +138,8 @@ void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming,
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("PlayerAttack"));
 		ProjectileMeshComponent->BodyInstance.SetCollisionProfileName(TEXT("PlayerAttack"));
 	}
+
+	UGameplayStatics::SpawnEmitterAttached(ProjectileParticleEffect, RootComponent);
 
 }
 

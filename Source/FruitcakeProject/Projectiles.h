@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Particles/ParticleSystem.h"
+#include "Components/PointLightComponent.h"
 #include "Projectiles.generated.h"
 
 UCLASS()
@@ -47,9 +49,12 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
 		UStaticMeshComponent* ProjectileMeshComponent;
 
-	// Projectile material
+	// Projectile materials
 	UPROPERTY(VisibleDefaultsOnly, Category = Movement)
 		UMaterialInstanceDynamic* ProjectileMaterialInstance;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = Movement)
+		UMaterialInstance* ProjectileMaterialInstanceEnemy;
 
 	// Sphere collision component.
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
@@ -58,6 +63,14 @@ protected:
 	// Projectile movement component.
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 		UProjectileMovementComponent* ProjectileMovementComponent;
+
+	// Projectile Particle Emitter
+	UPROPERTY(VisibleAnywhere)
+		UParticleSystem* ProjectileParticleEffect;
+
+	//Point Light
+	UPROPERTY(VisibleAnywhere)
+		UPointLightComponent* PointLightComponent;
 
 	bool isPlayerProjectile;
 };
