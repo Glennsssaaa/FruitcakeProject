@@ -156,7 +156,10 @@ void APlayerCharacter::MoveForwardMethod(float value)
 
 			AddMovementInput(direction, value);
 		}
-		
+		moveDir = value;
+	}
+	else {
+		moveDir = 0;
 	}
 
 }

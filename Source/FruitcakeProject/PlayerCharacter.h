@@ -159,5 +159,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float m_Rotation_Speed = 200.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float moveDir = 0.f;
+
 	float m_Camera_Zoom_Value;
 };
