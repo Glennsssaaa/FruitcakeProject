@@ -110,11 +110,22 @@ void ARadishEnemy::Tick(float DeltaTime)
 	if (bHostile) {
 		// If enemy is hostile, move towards player
 		FVector Direction = PlayerCharacter->GetActorLocation() - GetActorLocation();
-		Direction.Normalize();
-		AddMovementInput(Direction, MovementSpeed * DeltaTime);
+
+		// if enemy too close to player, stop moving
+		
+		if(Direction.Size() > 100)
+		{
+			Direction.Normalize();
+			AddMovementInput(Direction, MovementSpeed * DeltaTime);
+		}
+
+		
 	}
 	else if (bStunned) {
 		// If enemy is stunned, do nothing
+		FVector Direction = PlayerCharacter->GetActorLocation() + GetActorLocation();
+		Direction.Normalize();
+		AddMovementInput(Direction, MovementSpeed * DeltaTime);
 	}
 	else {
 		// If enemy is not hostile, do nothing
@@ -147,7 +158,9 @@ void ARadishEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 {
 	if (OtherComp->ComponentHasTag(FName("PlayerAttack")))
 	{
-		health_pool--;
+		TakeDamage(1, FDamageEvent(), nullptr, this);
+		bStunned = true;
+		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 3.f);
 		if (health_pool <= 0) 
 		{
 			// to do - unbind delegates 
@@ -157,13 +170,7 @@ void ARadishEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 	}
 }
 
-//void ARadishEnemy::OnWeakPointOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-//{
-//	if (OtherComp->ComponentHasTag(FName("PlayerAttack")) && bStunned == true)
-//	{
-//		Destroy();
-//	}
-//}
+
 
 void ARadishEnemy::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
