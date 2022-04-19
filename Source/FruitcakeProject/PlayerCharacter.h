@@ -162,5 +162,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float moveDir = 0.f;
 
+	// Animation Blueprint Variables
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
+	bool is_Attack;
+
 	float m_Camera_Zoom_Value;
 };

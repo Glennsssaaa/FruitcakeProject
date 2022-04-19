@@ -239,6 +239,6 @@ void ARadishEnemy::SetAttackDelayBool()
 
 void ARadishEnemy::ReducePlayerHealth()
 {
-	PlayerCharacter->TakeDamage(10.f, FDamageEvent(), nullptr, this);
+	PlayerCharacter->TakeDamage(1.f, FDamageEvent(), nullptr, this);
 	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &ARadishEnemy::CheckIfStillOverlapping, 0.1f, false, f_attack_delay_time);
 }
