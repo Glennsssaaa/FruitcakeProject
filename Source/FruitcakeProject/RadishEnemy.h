@@ -12,6 +12,8 @@
 
 #include "GameFramework/MovementComponent.h"
 
+#include "Particles/ParticleSystem.h"
+
 #include "RadishEnemy.generated.h"
 
 UCLASS(Blueprintable)
@@ -56,6 +58,9 @@ public:
 
 	UFUNCTION()
 		void SetStunned();
+
+	UFUNCTION()
+		void Kill();
 protected:
 
 	// pointer to player character
@@ -66,7 +71,7 @@ protected:
 	FTimerHandle StunTimerHandle;
 
 	//Sphere collision component.
-	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
+	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
 		UBoxComponent* CollisionComponent;
 
 	//Sphere Weak Point Static Mesh
@@ -104,6 +109,14 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
 		UMaterial* red_material;
+
+	//death boolean
+	UPROPERTY(BlueprintReadWrite)
+		bool dead;
+
+	//death timer
+	UPROPERTY(BlueprintReadWrite)
+		float deathTimer;
 
 	int health_pool;
 };

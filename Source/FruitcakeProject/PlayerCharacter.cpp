@@ -155,7 +155,8 @@ void APlayerCharacter::MoveForwardMethod(float value)
 		}
 		forwardDir = value;
 	}
-	else {
+	else 
+	{
 		forwardDir = 0;
 	}
 

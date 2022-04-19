@@ -3,6 +3,7 @@
 #include "Projectiles.h"
 #include "AoeAttackController.h"
 
+
 // Sets default values
 ARadishEnemy::ARadishEnemy()
 {
@@ -68,6 +69,8 @@ ARadishEnemy::ARadishEnemy()
 
 	static ConstructorHelpers::FObjectFinder<UMaterial>Material1(TEXT("Material'/Game/Fruitcake_Game/Materials/Red.Red'"));
 	red_material = Material1.Object;
+
+	dead = false;
 }
 
 // Called when the game starts or when spawned
@@ -91,7 +94,10 @@ void ARadishEnemy::BeginPlay()
 void ARadishEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	if (dead)
+	{
+		deathTimer -= DeltaTime;
+	}
 }
 
 void ARadishEnemy::FireAtPlayer()
@@ -172,6 +178,11 @@ void ARadishEnemy::SetStunned()
 	bStunned = false;
 }
 
+void ARadishEnemy::Kill()
+{
+	Destroy();
+}
+
 void ARadishEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherComp->ComponentHasTag(FName("PlayerAttack")))
@@ -181,7 +192,8 @@ void ARadishEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 		{
 			// to do - unbind delegates 
 
-			Destroy();
+			dead = true;
+			deathTimer = 6.5f;
 		}
 	}
 }
@@ -190,7 +202,7 @@ void ARadishEnemy::OnWeakPointOverlapBegin(UPrimitiveComponent* OverlappedComp, 
 {
 	if (OtherComp->ComponentHasTag(FName("PlayerAttack")) && bStunned == true)
 	{
-		Destroy();
+		//Destroy();
 	}
 }
 
