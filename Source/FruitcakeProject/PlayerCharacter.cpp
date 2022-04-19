@@ -65,6 +65,7 @@ void APlayerCharacter::BeginPlay()
 	m_Can_Move = true;
 	can_Cast = true;
 	can_Dash = true;
+	is_Attack = false;
 	m_Camera_Zoom_Value = 1050.f;
 	CameraBoom->CameraLagSpeed = 5.f;
 	GetCharacterMovement()->RotationRate = FRotator(2160.f, 2160.f, 2160.f);
