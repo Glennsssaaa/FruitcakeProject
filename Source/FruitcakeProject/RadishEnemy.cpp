@@ -132,7 +132,11 @@ void ARadishEnemy::Tick(float DeltaTime)
 	}
 	RotateTowardsPlayer();
 	
-
+	if (dead)
+	{
+		deathTimer -= DeltaTime;
+	}
+	
 }
 
 void ARadishEnemy::RotateTowardsPlayer() {

@@ -116,6 +116,14 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
 		UMaterial* red_material;
 
+	//death boolean
+	UPROPERTY(BlueprintReadWrite)
+	bool dead;
+
+	//death timer
+	UPROPERTY(BlueprintReadWrite)
+	float deathTimer;
+	
 	int health_pool;
 	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
 		bool b_attack_delay_active;
