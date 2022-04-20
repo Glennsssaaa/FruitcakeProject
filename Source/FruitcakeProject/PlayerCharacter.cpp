@@ -81,7 +81,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (!UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 2.5f))
+	if (!UKismetMathLibrary::NearlyEqual_FloatFloat(m_Rotation_Angle, m_Target_Angle, 100.f * DeltaTime))
 	{
 		CameraBoom->bEnableCameraLag = false;
 		float Rotation_Step = m_Rotation_Speed * DeltaTime;
@@ -256,9 +256,9 @@ void APlayerCharacter::ResetProjecitle()
 
 
 
-bool APlayerCharacter::ImprovedDashFunction() {
+bool APlayerCharacter::ImprovedDashFunction(float DeltaTime) {
 	// get forward vector
-//	CameraBoom->bEnableCameraLag = false;
+	CameraBoom->bEnableCameraLag = false;
 	const FRotator Rotation = GetActorRotation();
 	const FRotator Yaw(0, Rotation.Yaw, 0);
 	const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
@@ -268,7 +268,7 @@ bool APlayerCharacter::ImprovedDashFunction() {
 	FHitResult SweepHitResult;
 
 	// set actor location using interpolation and check if there is any collision in the way
-	SetActorLocation(FMath::VInterpTo(GetActorLocation(), m_Predicted_Location, GetWorld()->GetDeltaSeconds(), m_Dash_Speed), true, &SweepHitResult);
+	SetActorLocation(FMath::VInterpTo(GetActorLocation(), m_Predicted_Location, GetWorld()->GetDeltaSeconds(), (m_Dash_Speed * DeltaTime) * 50), true, &SweepHitResult);
 	
 	const FVector2D ActorLocation2D = FVector2D(GetActorLocation().X, GetActorLocation().Y);
 	const FVector2D PredictedLocation2D = FVector2D(m_Predicted_Location.X, m_Predicted_Location.Y);
