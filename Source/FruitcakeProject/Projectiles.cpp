@@ -133,8 +133,6 @@ void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming,
 	}
 	else
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Player"));
-
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("PlayerAttack"));
 		ProjectileMeshComponent->BodyInstance.SetCollisionProfileName(TEXT("PlayerAttack"));
 	}
@@ -166,8 +164,6 @@ void AProjectiles::GetTarget()
 
 void AProjectiles::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("oop"));
-	
 	if (OtherActor != this)
 	{
 		// Enemy Projectile Collision Responses
@@ -182,7 +178,7 @@ void AProjectiles::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 
 		if (OtherComp->ComponentHasTag(FName(TEXT("Enemy"))))
 		{
-			OtherActor->Destroy();
+			OtherActor->TakeDamage(1.f, FDamageEvent(), nullptr, this);
 		}
 
 
@@ -190,7 +186,6 @@ void AProjectiles::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 	// Player Projectile Collision Responses
 	if (isPlayerProjectile && !OtherActor->IsA(APlayerCharacter::StaticClass()) && OtherComp->GetCollisionProfileName() != FName("DoorButton") && OtherComp->GetCollisionProfileName() != FName("AICollision"))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Phit"));
 		Destroy();
 	}
 }
@@ -199,9 +194,7 @@ void AProjectiles::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 {
 	if(!isPlayerProjectile && OtherComponent->GetCollisionProfileName() == (FName(TEXT("Player"))))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Player Hit"));
 		PlayerCharacter->TakeDamage(1.f, FDamageEvent(), nullptr, this);
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("bad Player Hit"));
 	Destroy();
 }

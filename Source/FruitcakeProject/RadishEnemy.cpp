@@ -160,11 +160,12 @@ bool ARadishEnemy::CheckForOverlapMethod()
 
 void ARadishEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherComp->ComponentHasTag(FName("PlayerAttack")))
+	if (OtherComp->ComponentHasTag(FName("PlayerAttack")) && PlayerCharacter->GetCanDamage() == true)
 	{
+		PlayerCharacter->SetCanDamage();
 		TakeDamage(1, FDamageEvent(), nullptr, this);
 		bStunned = true;
-		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 3.f);
+		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.3f, false, 0.3f);
 		if (health_pool <= 0) 
 		{
 			// to do - unbind delegates 
@@ -184,9 +185,6 @@ void ARadishEnemy::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 {
 	if (OtherComponent->ComponentHasTag(FName("Player")) && bStunned == false)
 	{
-	//	PlayerCharacter->ReducePlayerHealth();
-	//	bStunned = true;
-		//GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.5f, false, 5.f);
 
 	}
 }
@@ -205,7 +203,7 @@ void ARadishEnemy::OnTriggerEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 {
 	if (OtherComp->GetCollisionProfileName() == TEXT("Player"))
 	{
-		bHostile = false;
+	//	bHostile = false;
 	}
 }
 

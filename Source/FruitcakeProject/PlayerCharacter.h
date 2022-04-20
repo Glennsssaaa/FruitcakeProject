@@ -76,7 +76,8 @@ public:
 	void ReducePlayerHealth();
 
 
-
+	bool GetCanDamage();
+	void SetCanDamage();
 
 	UFUNCTION()
 		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -165,6 +166,8 @@ protected:
 	// Animation Blueprint Variables
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
 	bool is_Attack;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
+	bool can_Damage;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
 	bool is_Spellcast;

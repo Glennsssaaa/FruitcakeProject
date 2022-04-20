@@ -95,7 +95,7 @@ protected:
 		USphereComponent* AttackRange;
 
 	// Sets if enemy is moving towards player or not
-	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RadishEnemy")
 		bool bHostile;
 
 	// Sets if enemy is stunned or not

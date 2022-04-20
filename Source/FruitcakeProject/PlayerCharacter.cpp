@@ -71,6 +71,7 @@ void APlayerCharacter::BeginPlay()
 	GetCharacterMovement()->RotationRate = FRotator(2160.f, 2160.f, 2160.f);
 	m_Dash_Distance = 600.f;
 	m_Dash_Speed = 6.f;
+	can_Damage = true;
 
 }
 
@@ -308,6 +309,16 @@ void APlayerCharacter::RotatePlayerToCursor()
 
 	SetActorRelativeRotation(newRot);
 
+}
+
+bool APlayerCharacter::GetCanDamage()
+{
+	return can_Damage;
+}
+
+void APlayerCharacter::SetCanDamage()
+{
+	can_Damage = false;
 }
 
 void APlayerCharacter::ReducePlayerHealth()
