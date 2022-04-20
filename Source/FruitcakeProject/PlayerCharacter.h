@@ -165,6 +165,8 @@ protected:
 	// Animation Blueprint Variables
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
 	bool is_Attack;
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
+	bool is_Spellcast;
 	float m_Camera_Zoom_Value;
 };
