@@ -312,7 +312,7 @@ void APlayerCharacter::RotatePlayerToCursor()
 
 void APlayerCharacter::ReducePlayerHealth()
 {
-	m_Player_Health_Points -= 0.1f;
+	
 }
 
 void APlayerCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

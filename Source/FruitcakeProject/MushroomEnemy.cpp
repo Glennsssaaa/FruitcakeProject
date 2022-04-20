@@ -13,7 +13,7 @@ AMushroomEnemy::AMushroomEnemy()
 
 	if (!CollisionComponent)
 	{
-		// Set Collsion box to be sphere.
+		// Set Collision box to be sphere.
 		CollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 		// Set collision box radius.
 		CollisionComponent->SetBoxExtent(FVector(120.f, 120.f, 120.f));
