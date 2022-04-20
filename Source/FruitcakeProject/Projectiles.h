@@ -36,11 +36,9 @@ public:
 	// gets projectiles target if is set to homing
 	void GetTarget();
 
-	void EditTweet();
-
 	// Function that is called when the projectile hits something.
 	UFUNCTION()
-		void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+		void OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 protected:
 	FTimerHandle ProjectileTimerHandle;

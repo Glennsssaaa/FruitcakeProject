@@ -23,7 +23,11 @@ AProjectiles::AProjectiles()
 		// Set the root component to be newly created component.
 		RootComponent = CollisionComponent;
 	}
+	// Event called when component hits something.
+	CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("EnemyProjectile"));
+	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AProjectiles::OnOverlap);
 
+	
 	// projectile movement component set up
 	if (!ProjectileMovementComponent)
 	{
@@ -34,8 +38,8 @@ AProjectiles::AProjectiles()
 		ProjectileMovementComponent->SetUpdatedComponent(CollisionComponent);
 
 		// set up projecitle initial and maximum speeds
-		ProjectileMovementComponent->InitialSpeed = 500.0f;
-		ProjectileMovementComponent->MaxSpeed = 500.0f;
+		ProjectileMovementComponent->InitialSpeed = 1500.0f;
+		ProjectileMovementComponent->MaxSpeed = 1500.0f;
 
 		ProjectileMovementComponent->bRotationFollowsVelocity = true;
 		ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
@@ -61,7 +65,7 @@ AProjectiles::AProjectiles()
 	}
 
 	// Load material for projectile from unreal files
-	static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("Material'/Game/Fruitcake_Game/Materials/ProjectileM.ProjectileM'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("Material'/Game/Fruitcake_Game/Materials/Material_GuideLaser.Material_GuideLaser'"));
 	if (Material.Succeeded())
 	{
 		ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
@@ -69,12 +73,27 @@ AProjectiles::AProjectiles()
 	ProjectileMeshComponent->SetMaterial(0, ProjectileMaterialInstance);
 	ProjectileMeshComponent->BodyInstance.SetCollisionProfileName(TEXT("EnemyProjectile"));
 
-	ProjectileMeshComponent->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
+	ProjectileMeshComponent->SetRelativeScale3D(FVector(0.1f, 0.1f, 0.1f));
 	ProjectileMeshComponent->SetupAttachment(RootComponent);
 
-	// Event called when component hits something.
-	CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("EnemyProjectile"));
-	CollisionComponent->OnComponentHit.AddDynamic(this, &AProjectiles::OnHit);
+
+
+	if (!ProjectileParticleEffect)
+	{
+		ProjectileParticleEffect = CreateDefaultSubobject<UParticleSystem>(TEXT("ParticleEffect"));
+		static ConstructorHelpers::FObjectFinder<UParticleSystem>Particle(TEXT("ParticleSystem'/Game/Fruitcake_Game/VFX/ProjectileEffect.ProjectileEffect'"));
+		if (Particle.Succeeded())
+		{
+			ProjectileParticleEffect = Particle.Object;
+		}
+	}
+
+	if (!PointLightComponent)
+	{
+		PointLightComponent = CreateDefaultSubobject<UPointLightComponent>(TEXT("PointLight"));
+		PointLightComponent->SetupAttachment(RootComponent);
+		PointLightComponent->SetLightColor(FLinearColor(0.f, 0.5f, 1.f, 1.f));
+	}
 
 }
 
@@ -87,7 +106,6 @@ void AProjectiles::BeginPlay()
 
 
 }
-
 
 // Called every frame
 void AProjectiles::Tick(float DeltaTime)
@@ -121,6 +139,8 @@ void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming,
 		ProjectileMeshComponent->BodyInstance.SetCollisionProfileName(TEXT("PlayerAttack"));
 	}
 
+	UGameplayStatics::SpawnEmitterAttached(ProjectileParticleEffect, RootComponent);
+
 }
 
 
@@ -135,29 +155,35 @@ void AProjectiles::GetTarget()
 {
 }
 
-void AProjectiles::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+void AProjectiles::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-
+	if (isPlayerProjectile)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Phit"));
+	}
 	if (OtherActor != this)
 	{
 		// Enemy Projectile Collision Responses
-		if (!isPlayerProjectile && OtherComponent->ComponentHasTag(FName(TEXT("Player"))))
+		if (!isPlayerProjectile)
 		{
-			PlayerCharacter->ReducePlayerHealth();
-
-		}
-
-		// Player Projectile Collision Responses
-		if (isPlayerProjectile && !OtherActor->IsA(APlayerCharacter::StaticClass()))
-		{
-			PlayerCharacter->ReducePlayerHealth();
+			if (OtherComp->ComponentHasTag(FName(TEXT("Player"))))
+			{
+				PlayerCharacter->ReducePlayerHealth();
+			}
 			Destroy();
 		}
+
+		if (OtherComp->ComponentHasTag(FName(TEXT("Enemy"))))
+		{
+			OtherActor->Destroy();
+		}
+
+
 	}
-
+	// Player Projectile Collision Responses
+	if (isPlayerProjectile && !OtherActor->IsA(APlayerCharacter::StaticClass()) && OtherComp->GetCollisionProfileName() != FName("DoorButton") && OtherComp->GetCollisionProfileName() != FName("AICollision"))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Phit"));
+		Destroy();
+	}
 }
-
-void AProjectiles::EditTweet() {
-	
-}
-	
