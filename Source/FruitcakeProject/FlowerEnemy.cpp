@@ -69,7 +69,7 @@ void AFlowerEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	//	FireAtPlayer();
+	//FireAtPlayer();
 }
 
 void AFlowerEnemy::FireAtPlayer()
