@@ -72,6 +72,7 @@ void APlayerCharacter::BeginPlay()
 	m_Dash_Distance = 600.f;
 	m_Dash_Speed = 6.f;
 	can_Damage = true;
+	is_Attack = false;
 
 }
 
