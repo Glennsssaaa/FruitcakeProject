@@ -155,22 +155,26 @@ void AProjectiles::GetTarget()
 
 void AProjectiles::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
-
+	if (isPlayerProjectile)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Phit"));
+	}
 	if (OtherActor != this)
 	{
 		// Enemy Projectile Collision Responses
-		if (!isPlayerProjectile && OtherComponent->ComponentHasTag(FName(TEXT("Player"))))
+		if (!isPlayerProjectile)
 		{
-			PlayerCharacter->ReducePlayerHealth();
-
+			if (OtherComponent->ComponentHasTag(FName(TEXT("Player"))))
+			{
+				PlayerCharacter->ReducePlayerHealth();
+			}
+			Destroy();
 		}
 
 		// Player Projectile Collision Responses
-		if (isPlayerProjectile)
+		if (isPlayerProjectile && OtherActor != UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
 		{
-
+			Destroy();
 		}
-		Destroy();
 	}
-
 }
