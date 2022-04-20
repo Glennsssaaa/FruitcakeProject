@@ -107,34 +107,32 @@ void ARadishEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bHostile) {
-		// If enemy is hostile, move towards player
-		FVector Direction = PlayerCharacter->GetActorLocation() - GetActorLocation();
+	if(!dead)
+	{
+		if (bHostile) {
+			// If enemy is hostile, move towards player
+			FVector Direction = PlayerCharacter->GetActorLocation() - GetActorLocation();
 
-		// if enemy too close to player, stop moving
-		
-		if(Direction.Size() > 100)
-		{
+			// if enemy too close to player, stop moving
+
+			if (Direction.Size() > 100)
+			{
+				Direction.Normalize();
+				AddMovementInput(Direction, MovementSpeed * DeltaTime);
+			}
+
+
+		}
+		else if (bStunned) {
+			// If enemy is stunned, do nothing
+			FVector Direction = PlayerCharacter->GetActorLocation() + GetActorLocation();
 			Direction.Normalize();
 			AddMovementInput(Direction, MovementSpeed * DeltaTime);
 		}
-
-		
-	}
-	else if (bStunned) {
-		// If enemy is stunned, do nothing
-		FVector Direction = PlayerCharacter->GetActorLocation() + GetActorLocation();
-		Direction.Normalize();
-		AddMovementInput(Direction, MovementSpeed * DeltaTime);
-	}
-	else {
-		// If enemy is not hostile, do nothing
-	}
-	RotateTowardsPlayer();
-	
-	if (dead)
-	{
-		deathTimer -= DeltaTime;
+		else {
+			// If enemy is not hostile, do nothing
+		}
+		RotateTowardsPlayer();
 	}
 	
 }

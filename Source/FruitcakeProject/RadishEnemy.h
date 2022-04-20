@@ -79,7 +79,7 @@ protected:
 
 
 	// Sphere collision component.
-	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
+	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
 		UBoxComponent* CollisionComponent;
 
 	//// Sphere Weak Point Static Mesh
