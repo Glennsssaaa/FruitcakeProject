@@ -36,6 +36,7 @@ public:
 protected:
 
 	// pointer to player character
+	UPROPERTY()
 	class APlayerCharacter* PlayerCharacter;
 
 	FTimerHandle AttackTimerHandle;

@@ -92,6 +92,7 @@ protected:
 	bool isPlayerHit = false;
 	FTimerHandle AOEActivateTimer;
 
+	UPROPERTY()
 	class APlayerCharacter* PlayerCharacter;
 
 

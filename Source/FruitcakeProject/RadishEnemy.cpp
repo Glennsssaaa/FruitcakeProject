@@ -1,6 +1,7 @@
 #include "RadishEnemy.h"
 #include "PlayerCharacter.h"
 #include "Projectiles.h"
+#include "Kismet/GameplayStatics.h"
 #include "AoeAttackController.h"
 
 // Sets default values
@@ -13,7 +14,7 @@ ARadishEnemy::ARadishEnemy()
 
 	if (!CollisionComponent)
 	{
-		// Set Collsion box to be sphere.
+		// Set Collision box to be sphere.
 		CollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 		// Set collision box radius.
 		CollisionComponent->SetBoxExtent(FVector(125.f, 125.f, 100.f));
@@ -25,9 +26,7 @@ ARadishEnemy::ARadishEnemy()
 
 	CollisionComponent->SetCollisionProfileName(TEXT("Enemy"));
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &ARadishEnemy::OnOverlapBegin);
-	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &ARadishEnemy::OnOverlapEnd);
-	CollisionComponent->OnComponentHit.AddDynamic(this, &ARadishEnemy::OnHit);
-	
+
 	// Sight Sphere Component Set Up
 
 	if (!SightSphere)
@@ -50,30 +49,7 @@ ARadishEnemy::ARadishEnemy()
 	}
 	AttackRange->SetCollisionProfileName(TEXT("EnemyAOE"));
 	AttackRange->OnComponentBeginOverlap.AddDynamic(this, &ARadishEnemy::OnAttackRangeOverlapBegin);
-	AttackRange->OnComponentEndOverlap.AddDynamic(this, &ARadishEnemy::OnAttackRangeOverlapEnd);
-
-	// Weak Point Component Set Up
-
-	//if (!WeakPointMeshComponent)
-	//{
-	//	// sets mesh of projectile to basic sphere mesh, loaded from unreal engine files
-	//	WeakPointMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeakPointMeshComponent"));
-	//	static ConstructorHelpers::FObjectFinder<UStaticMesh>Mesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
-	//	if (Mesh.Succeeded())
-	//	{
-	//		WeakPointMeshComponent->SetStaticMesh(Mesh.Object);
-	//		static ConstructorHelpers::FObjectFinder<UMaterial>Mat(TEXT("Material'/Game/Fruitcake_Game/Materials/ProjectileM.ProjectileM'"));
-	//		WeakPointMeshComponent->SetMaterial(0, Mat.Object);
-	//	}
-	//	WeakPointMeshComponent->SetWorldLocation(FVector(-50, 0, -50));
-	//}
-	//WeakPointMeshComponent->SetupAttachment(RootComponent);
-	//WeakPointMeshComponent->SetCollisionProfileName(TEXT("AICollision"));
-	//WeakPointMeshComponent->OnComponentBeginOverlap.AddDynamic(this, &ARadishEnemy::OnWeakPointOverlapBegin);	
-
-
-
-
+	
 	static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("Material'/Game/StarterContent/Materials/M_Basic_Wall.M_Basic_Wall'"));
 	default_material = Material.Object;
 
@@ -85,10 +61,7 @@ ARadishEnemy::ARadishEnemy()
 void ARadishEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-
-	PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-
-
+	
 	// Initialise hostile, stunned and attack bools
 	bHostile = false;
 	bStunned = false;
@@ -96,7 +69,7 @@ void ARadishEnemy::BeginPlay()
 	b_attack_delay_active = false;
 	MovementSpeed = 20.f;
 	AttackRange->SetSphereRadius(300.f);
-	health_pool = 5;
+	Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 
 	f_attack_delay_time = 0.6f;
 
@@ -109,10 +82,10 @@ void ARadishEnemy::Tick(float DeltaTime)
 
 	if(!dead)
 	{
-		if (bHostile) {
+		if (bHostile)
+			{
 			// If enemy is hostile, move towards player
-			FVector Direction = PlayerCharacter->GetActorLocation() - GetActorLocation();
-
+			FVector Direction = Player->GetActorLocation() - GetActorLocation();
 			// if enemy too close to player, stop moving
 
 			if (Direction.Size() > 100)
@@ -125,7 +98,7 @@ void ARadishEnemy::Tick(float DeltaTime)
 		}
 		else if (bStunned) {
 			// If enemy is stunned, do nothing
-			FVector Direction = PlayerCharacter->GetActorLocation() + GetActorLocation();
+			FVector Direction = Player->GetActorLocation() + GetActorLocation();
 			Direction.Normalize();
 			AddMovementInput(Direction, MovementSpeed * DeltaTime);
 		}
@@ -138,9 +111,9 @@ void ARadishEnemy::Tick(float DeltaTime)
 }
 
 void ARadishEnemy::RotateTowardsPlayer() {
-	FVector Direction = PlayerCharacter->GetActorLocation() - GetActorLocation();
+	FVector Direction = Player->GetActorLocation() - GetActorLocation();
 	Direction.Normalize();
-	FRotator NewLookAt = FRotationMatrix::MakeFromX(Direction).Rotator();
+	const FRotator NewLookAt = FRotationMatrix::MakeFromX(Direction).Rotator();
 	SetActorRotation(NewLookAt);
 }
 	
@@ -151,44 +124,33 @@ void ARadishEnemy::SetStunned()
 	bStunned = false;
 }
 
-bool ARadishEnemy::CheckForOverlapMethod()
-{
-	return false;
-}
-
 void ARadishEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherComp->ComponentHasTag(FName("PlayerAttack")) && PlayerCharacter->GetCanDamage() == true)
+	if(OtherActor == nullptr || OtherComp == nullptr || OtherActor == this)
 	{
-		PlayerCharacter->SetCanDamage();
+		return;
+	}
+	
+	if (OtherComp->ComponentHasTag(FName("PlayerAttack")) /* && PlayerCharacter->GetCanDamage() == true -- Note - Change */)
+	{
+		//PlayerCharacter->SetCanDamage();
 		TakeDamage(1, FDamageEvent(), nullptr, this);
 		bStunned = true;
 		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.3f, false, 0.3f);
-		if (health_pool <= 0) 
-		{
-			// to do - unbind delegates 
-
-			Destroy();
-		}
 	}
 }
 
 
 
-void ARadishEnemy::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-}
-
-void ARadishEnemy::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
-{
-	if (OtherComponent->ComponentHasTag(FName("Player")) && bStunned == false)
-	{
-
-	}
-}
 
 void ARadishEnemy::OnTriggerBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if(OtherActor == nullptr || OtherComp == nullptr || OtherActor == this)
+	{
+		return;
+	}
+
+	// Enemy becomes hostile, will move towards player
 	if (OtherComp->GetCollisionProfileName() == TEXT("Player"))
 	{
 		bHostile = true;
@@ -199,6 +161,12 @@ void ARadishEnemy::OnTriggerBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 
 void ARadishEnemy::OnTriggerEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	if(OtherActor == nullptr || OtherComp == nullptr || OtherActor == this)
+	{
+		return;
+	}
+
+	
 	if (OtherComp->GetCollisionProfileName() == TEXT("Player"))
 	{
 	//	bHostile = false;
@@ -207,20 +175,21 @@ void ARadishEnemy::OnTriggerEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 
 void ARadishEnemy::OnAttackRangeOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if(OtherActor == nullptr || OtherComp == nullptr || OtherActor == this)
+	{
+		return;
+	}
+	
 	if (OtherActor->IsA(APlayerCharacter::StaticClass()) && !b_attack_delay_active)
 	{
 		GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &ARadishEnemy::CheckIfStillOverlapping, 0.1f, false, f_attack_delay_time);
 	}
 }
 
-void ARadishEnemy::OnAttackRangeOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-}
-
 void ARadishEnemy::CheckIfStillOverlapping()
 {
 	// Checks if enemy attack range component is still overlapping with player, if so, attack again, with a delay of half a second
-	if (AttackRange->IsOverlappingActor(PlayerCharacter) && !b_attack_delay_active) 
+	if (AttackRange->IsOverlappingActor(Player) && !b_attack_delay_active) 
 	{
 		bAttack = true;
 		b_attack_delay_active = true;
@@ -239,6 +208,5 @@ void ARadishEnemy::SetAttackDelayBool()
 
 void ARadishEnemy::ReducePlayerHealth()
 {
-	PlayerCharacter->TakeDamage(1.f, FDamageEvent(), nullptr, this);
 	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &ARadishEnemy::CheckIfStillOverlapping, 0.1f, false, f_attack_delay_time);
 }

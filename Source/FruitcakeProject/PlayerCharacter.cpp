@@ -2,11 +2,10 @@
 
 
 #include "PlayerCharacter.h"
-#include "Math/UnrealMathUtility.h" 
+#include "Math/UnrealMathUtility.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Math/Vector2D.h" 
 #include "Components/InputComponent.h" 
-#include "Components/CapsuleComponent.h"
-#include "AoeAttackController.h"
 #include "Projectiles.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -16,25 +15,16 @@ APlayerCharacter::APlayerCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// stuff that you should do
-	m_Look_Rate = 45.f;
-	m_Turn_Rate = 45.f;
-
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0, 540.f, 0);
-
-	// Set player health and energy values to max (1.f = 100%)
-	m_Player_Health_Points = 1.f;
 	
-	AOEAttackClass = AAoeAttackController::StaticClass();
-	ProjectileClass = AProjectiles::StaticClass();
+	SpellClass = AProjectiles::StaticClass();
 	
-
-	// Camera Set Up
+	// Camera Boom Set Up
 	if (!CameraBoom)
 	{
 		CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -46,35 +36,79 @@ APlayerCharacter::APlayerCharacter()
 		CameraBoom->SetupAttachment(RootComponent);
 	}
 
+	// Camera Setup
 	if (!Camera)
 	{
 		Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-
 		Camera->SetupAttachment(CameraBoom);
 	}
+}
 
-	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
+// Called to bind functionality to input
+void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	check(PlayerInputComponent);
+
+	/* ---------- AXIS MAPPINGS ----------*/
+
+	// WASD MOVEMENT
+	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerCharacter::MoveForwardMethod);
+	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::MoveRightMethod);
+
+	// PITCH, YAW, TURN AT AND LOOK AT RATES
+	PlayerInputComponent->BindAxis("TurnRate", this, &APlayerCharacter::TurnAtRateMethod);
+	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("LookUpRate", this, &APlayerCharacter::LookUpRateMethod);
+
+	/* ---------- ACTION MAPPINGS ----------*/
+
+	// DASHING
+	//	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &APlayerCharacter::DashInputMethod);
+
+	// PERSPECTIVE SWITCHING 
+	PlayerInputComponent->BindAxis("SwitchPerspective", this, &APlayerCharacter::SwitchPerspectiveMethod);
+
+	// PROJECTILE FIRING
+	PlayerInputComponent->BindAction("CastProjectile", IE_Pressed, this, &APlayerCharacter::CastProjectileMethod);
 
 }
+
+
 
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	m_Can_Move = true;
-	can_Cast = true;
-	can_Dash = true;
-	is_Attack = false;
-	m_Camera_Zoom_Value = 1050.f;
-	CameraBoom->CameraLagSpeed = 5.f;
+
+	// Set Character Rotation Rate (How fast the player rotates to the direction they are moving)
 	GetCharacterMovement()->RotationRate = FRotator(2160.f, 2160.f, 2160.f);
+	m_Can_Move = true;
+	
+	// Dash Distance and Speed
 	m_Dash_Distance = 600.f;
 	m_Dash_Speed = 6.f;
+	bCan_Dash = true;
+
+	// Melee Attacks
 	can_Damage = true;
 	is_Attack = false;
 
+	// Spell Attacks
+	can_Cast = true;
+
+	// Player look and turn rate
+	m_Look_Rate = 45.f;
+	m_Turn_Rate = 45.f;
+
+	// Camera 
+	m_Camera_Zoom_Value = 1050.f;
+	CameraBoom->CameraLagSpeed = 5.f;
 }
+
+
 
 // Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
@@ -107,47 +141,16 @@ void APlayerCharacter::Tick(float DeltaTime)
 	}
 }
 
-// Called to bind functionality to input
-void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	check(PlayerInputComponent);
-
-	/* ---------- AXIS MAPPINGS ----------*/
-
-	// WASD MOVEMENT
-	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerCharacter::MoveForwardMethod);
-	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::MoveRightMethod);
-
-	// PITCH, YAW, TURN AT AND LOOK AT RATES
-	PlayerInputComponent->BindAxis("TurnRate", this, &APlayerCharacter::TurnAtRateMethod);
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("LookUpRate", this, &APlayerCharacter::LookUpRateMethod);
-
-	/* ---------- ACTION MAPPINGS ----------*/
-
-	// DASHING
-//	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &APlayerCharacter::DashInputMethod);
-
-	// PERSPECTIVE SWITCHING 
-	PlayerInputComponent->BindAxis("SwitchPerspective", this, &APlayerCharacter::SwitchPerspectiveMethod);
-
-	// PROJECTILE FIRING
-	PlayerInputComponent->BindAction("CastProjectile", IE_Pressed, this, &APlayerCharacter::CastProjectileMethod);
-
-}
-
-
-	
-
-
-
-void APlayerCharacter::MoveForwardMethod(float value)
+void APlayerCharacter::MoveForwardMethod(float Value)
 {
 	// W and S Movement
-	if (Controller != nullptr && value != 0)
+	// check if controller is nullptr, if so, return instantly
+	if(Controller == nullptr)
+	{
+		return;
+	}
+	
+	if (Value != 0)
 	{
 		if (m_Can_Move)
 		{
@@ -157,20 +160,25 @@ void APlayerCharacter::MoveForwardMethod(float value)
 			// gets forward vector
 			const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
 
-			AddMovementInput(direction, value);
+			AddMovementInput(direction, Value);
 		}
-		moveDir = value;
+		moveDir = Value;
 	}
-	else {
+	else
+	{
 		moveDir = 0;
 	}
-
 }
 
-void APlayerCharacter::MoveRightMethod(float value)
+void APlayerCharacter::MoveRightMethod(float Value)
 {
 	// A and D movement
-	if (Controller != nullptr && value != 0)
+	if(Controller == nullptr)
+	{
+		return;
+	}
+	
+	if (Value != 0)
 	{
 		if (m_Can_Move)
 		{
@@ -180,19 +188,29 @@ void APlayerCharacter::MoveRightMethod(float value)
 			// gets right vector
 			const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::Y);
 
-			AddMovementInput(direction, value);
+			AddMovementInput(direction, Value);
 		}
 	}
 }
 
-void APlayerCharacter::TurnAtRateMethod(float value)
+void APlayerCharacter::TurnAtRateMethod(float Value)
 {
-	AddControllerYawInput(value *= GetWorld()->GetDeltaSeconds() * m_Turn_Rate);
+	if(Value == 0)
+	{
+		return;
+	}
+	
+	AddControllerYawInput(Value *= GetWorld()->GetDeltaSeconds() * m_Turn_Rate);
 }
 
-void APlayerCharacter::LookUpRateMethod(float value)
+void APlayerCharacter::LookUpRateMethod(float Value)
 {
-	AddControllerPitchInput(value *= GetWorld()->GetDeltaSeconds() * m_Look_Rate);
+	if(Value == 0)
+	{
+		return;
+	}
+	
+	AddControllerPitchInput(Value *= GetWorld()->GetDeltaSeconds() * m_Look_Rate);
 }
 
 void APlayerCharacter::SwitchPerspectiveMethod(float value)
@@ -204,22 +222,14 @@ void APlayerCharacter::SwitchPerspectiveMethod(float value)
 	}
 	m_Cam_Rotate = FRotator::ZeroRotator;
 	m_Cam_Rotate.Roll = Camera->GetComponentRotation().Roll;
-
 }
 
 void APlayerCharacter::CastProjectileMethod()
 {
 	if (can_Cast)
 	{
-		FVector CameraLocation;
-		FRotator CameraRotation;
-		GetActorEyesViewPoint(CameraLocation, CameraRotation);
-
 		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
 		MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
-
-		// Transform MuzzleOffset from camera space to world space.
-		const FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
 
 		const FVector SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z + 50);
 
@@ -234,7 +244,7 @@ void APlayerCharacter::CastProjectileMethod()
 			SpawnParams.Instigator = GetInstigator();
 
 			// Spawn the projectile at the muzzle.
-			AProjectiles* Projectile = World->SpawnActor<AProjectiles>(ProjectileClass, SpawnLocation, MuzzleRotation, SpawnParams);
+			AProjectiles* Projectile = World->SpawnActor<AProjectiles>(SpellClass, SpawnLocation, MuzzleRotation, SpawnParams);
 
 			if (Projectile)
 			{
@@ -242,21 +252,21 @@ void APlayerCharacter::CastProjectileMethod()
 				const FVector LaunchDirection = MuzzleRotation.Vector();
 				Projectile->FireInDirection(LaunchDirection, false, true);
 				can_Cast = false;
-				GetWorldTimerManager().SetTimer(ProjectileTimerHandle, this, &APlayerCharacter::ResetProjecitle, .2f, false);
+				GetWorldTimerManager().SetTimer(SpellcastTimerHandle, this, &APlayerCharacter::ResetProjectile, .2f, false);
 			}
 
 		}
 	}
 }
 
-void APlayerCharacter::ResetProjecitle()
+void APlayerCharacter::ResetProjectile()
 {
 	can_Cast = true;
 }
 
 
-
-bool APlayerCharacter::ImprovedDashFunction(float DeltaTime) {
+bool APlayerCharacter::ImprovedDashFunction()
+{
 	// get forward vector
 	CameraBoom->bEnableCameraLag = false;
 	const FRotator Rotation = GetActorRotation();
@@ -268,7 +278,7 @@ bool APlayerCharacter::ImprovedDashFunction(float DeltaTime) {
 	FHitResult SweepHitResult;
 
 	// set actor location using interpolation and check if there is any collision in the way
-	SetActorLocation(FMath::VInterpTo(GetActorLocation(), m_Predicted_Location, GetWorld()->GetDeltaSeconds(), (m_Dash_Speed * DeltaTime) * 50), true, &SweepHitResult);
+	SetActorLocation(FMath::VInterpTo(GetActorLocation(), m_Predicted_Location, GetWorld()->GetDeltaSeconds(), (m_Dash_Speed * GetWorld()->GetDeltaSeconds()) * 50), true, &SweepHitResult);
 	
 	const FVector2D ActorLocation2D = FVector2D(GetActorLocation().X, GetActorLocation().Y);
 	const FVector2D PredictedLocation2D = FVector2D(m_Predicted_Location.X, m_Predicted_Location.Y);
@@ -279,37 +289,20 @@ bool APlayerCharacter::ImprovedDashFunction(float DeltaTime) {
 		GetWorld()->GetTimerManager().ClearTimer(t_Dash_Function);
 		CameraBoom->bEnableCameraLag = true;
 		is_Dashing = false;
-		GetWorld()->GetTimerManager().SetTimer(DashTimerHandle, this, &APlayerCharacter::DashCooldown, m_Dash_Cooldown, false);
+		GetWorld()->GetTimerManager().SetTimer(t_Dash_Cooldown_Timer, this, &APlayerCharacter::DashCooldown, m_Dash_Cooldown, false);
 		return true;
 	}
 	return false;
 }
 
-void APlayerCharacter::DashCooldown() {
-	can_Dash = true;
+void APlayerCharacter::DashCooldown()
+{
+	bCan_Dash = true;
 }
 
 
 void APlayerCharacter::RotatePlayerToCursor()
 {
-	FHitResult test;
-	FVector MouseLocation;
-	FVector MouseDirection;
-
-	const APlayerController* PController = GetWorld()->GetFirstPlayerController();
-
-	PController->DeprojectMousePositionToWorld(MouseLocation, MouseDirection);
-
-	const FRotator charRotation = GetActorRotation();
-	const FRotator targetRotation = MouseDirection.Rotation();
-
-	const FRotator newRot = FRotator(charRotation.Pitch, targetRotation.Yaw, charRotation.Roll);
-
-
-	FRotator PlayerRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), MouseLocation);
-
-	SetActorRelativeRotation(newRot);
-
 }
 
 bool APlayerCharacter::GetCanDamage()
@@ -322,27 +315,5 @@ void APlayerCharacter::SetCanDamage()
 	can_Damage = false;
 }
 
-void APlayerCharacter::ReducePlayerHealth()
-{
-	
-}
-
-void APlayerCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (is_Dashing && Cast<UStaticMeshComponent>(OtherComp) != nullptr)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Red, TEXT("hit"));
-	}
-}
 
 
-
-void APlayerCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
-{
-	if (is_Dashing && Cast<UStaticMeshComponent>(OtherComponent) != nullptr)
-	{
-		//GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Red, TEXT("hit"));
-
-		// set timer, this is how long before the player can dash again (Half a second)
-	}
-}
