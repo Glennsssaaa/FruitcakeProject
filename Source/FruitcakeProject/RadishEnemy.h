@@ -12,7 +12,12 @@
 
 #include "GameFramework/MovementComponent.h"
 
+<<<<<<< Updated upstream
 #include "Particles/ParticleSystem.h"
+=======
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+>>>>>>> Stashed changes
 
 #include "RadishEnemy.generated.h"
 
@@ -83,6 +88,17 @@ protected:
 		USphereComponent* SightSphere;
 
 	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
+<<<<<<< Updated upstream
+=======
+		USphereComponent* AttackRange;
+
+	//Attack Particle System Component
+	UPROPERTY(BlueprintReadWrite)
+		UNiagaraComponent* AttackVFX;
+
+	// Sets if enemy is moving towards player or not
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RadishEnemy")
+>>>>>>> Stashed changes
 		bool bHostile;
 
 	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")

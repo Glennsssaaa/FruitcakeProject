@@ -88,6 +88,11 @@ void ARadishEnemy::BeginPlay()
 	health_pool = 1;
 
 
+	if (AttackVFX)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, TEXT("pog"));
+	}
+
 }
 
 // Called every frame
@@ -237,6 +242,43 @@ void ARadishEnemy::OnTriggerEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	}
 }
 
+<<<<<<< Updated upstream
+=======
+void ARadishEnemy::OnAttackRangeOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor->IsA(APlayerCharacter::StaticClass()) && !b_attack_delay_active)
+	{
+		GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &ARadishEnemy::CheckIfStillOverlapping, 0.1f, false, f_attack_delay_time);
+	}
+}
+
+void ARadishEnemy::OnAttackRangeOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+}
+
+void ARadishEnemy::CheckIfStillOverlapping()
+{
+	// Checks if enemy attack range component is still overlapping with player, if so, attack again, with a delay of half a second
+	if (AttackRange->IsOverlappingActor(PlayerCharacter) && !b_attack_delay_active) 
+	{
+		bAttack = true;
+		b_attack_delay_active = true;
+		//AttackVFX->Deactivate();
+		GetWorldTimerManager().SetTimer(AttackDelayTimerHandle, this, &ARadishEnemy::SetAttackDelayBool, 0.1f, false, 0.5f);
+	}
+	else 
+	{
+		bAttack = false;
+		//AttackVFX->Activate(true);
+	}
+}
+
+void ARadishEnemy::SetAttackDelayBool() 
+{
+	b_attack_delay_active = false;
+}
+
+>>>>>>> Stashed changes
 void ARadishEnemy::ReducePlayerHealth()
 {
 	PlayerCharacter->ReducePlayerHealth();
