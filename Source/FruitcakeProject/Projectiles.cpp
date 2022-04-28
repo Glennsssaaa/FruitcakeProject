@@ -12,11 +12,13 @@ AProjectiles::AProjectiles()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Load material for projectile from unreal files
-	static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("Material'/Game/Fruitcake_Game/Materials/Material_GuideLaser.Material_GuideLaser'"));
+
+	//Causing error message on startup
+	/*static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("Material'/Game/Fruitcake_Game/Materials/Material_GuideLaser.Material_GuideLaser'"));
 	if (Material.Succeeded())
 	{
 		ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
-	}
+	}*/
 	
 	// collision component set up
 	if (!CollisionComponent)
