@@ -55,7 +55,7 @@ public:
 	/* --------- Dash Functions ---------- */
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
-		bool ImprovedDashFunction();
+		bool ImprovedDashFunction(float DeltaTime);
 	
 	void DashCooldown();
 	
