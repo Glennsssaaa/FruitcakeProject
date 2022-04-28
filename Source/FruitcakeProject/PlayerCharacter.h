@@ -53,18 +53,24 @@ public:
 	/* --------- Dash Functions ---------- */
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
-		bool ImprovedDashFunction();
+	bool ImprovedDashFunction();
 	
-	void DashCooldown();
+	void DashCooldownFunction();
 	
 	/* --------- Switch Perspective ---------- */
 	UFUNCTION(BlueprintCallable, Category = "Perspective")
-		void SwitchPerspectiveMethod(float value);
+	void SwitchPerspectiveMethod(float value);
 
 
+	/* ------ Player Melee Combat ------ */
+	UFUNCTION()
+	void MeleeAttack();
+
+	void MeleeAttackCooldown();
+	
 	/* --------- Player Projectile Casting ---------- */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-		void CastProjectileMethod();
+	void CastProjectileMethod();
 
 	void ResetProjectile();
 
@@ -79,64 +85,71 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	FVector MuzzleOffset;
 
-	float m_Turn_Rate;
-	float m_Look_Rate;
-	bool is_Dashing;
-
-
-	/* ------ Player Melee Attack ------ */
+	float TurnRate;
+	float LookRate;
+	bool bIsDashing;
 	
+	/* ------ Player Melee Attack ------ */
+	float MeleeCooldownTimer;
+	FTimerHandle MeleeTimerHandle;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
+	bool bIsAttack;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
+	bool bCanDamage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
+	bool bCanAttack;
 
+	
 	/* ------- Player Spell Cast Attack ------ */
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
-	bool is_Spell_cast;
+	bool bIsSpellCast;
 
 	// Timer handle to handle projectile cooldown
-	FTimerHandle SpellcastTimerHandle;
+	FTimerHandle CastTimerHandle;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spell Cast")
-	bool can_Cast;
+	bool bCanCast;
 
 	/* ------ Player Dash ------ */
 
 	// Can the player currently dash (are they already currently dashing)
-	bool bCan_Dash;
+	bool bCanDash;
 	
 	// Dash Timer
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FTimerHandle t_Dash_Function;
+	FTimerHandle DashTimer;
 	
 	// How far the player will dash
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float m_Dash_Distance;
+	float DashDistance;
 
 	// How fast the player will dash
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float m_Dash_Speed;
+	float DashSpeed;
 
 	// How often the player can dash
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float m_Dash_Cooldown;
+	float DashCooldown;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FTimerHandle t_Dash_Cooldown_Timer;
+	FTimerHandle DashCooldownTimer;
 	
 	// Stores the players initial position
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector m_Base_Location;
+	FVector BaseLocation;
 
 	// Stores the players predicted position for after the dash is complete
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector m_Predicted_Location;
+	FVector PredictedLocation;
 	
 
 
 
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool m_Can_Move = true;
+		bool bCanMove = true;
 	
 	/* ------ Player Camera ------ */
 
@@ -150,33 +163,24 @@ protected:
 
 	// Camera Rotator
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) 		
-	FRotator m_Cam_Rotate;
+	FRotator CameraRotate;
 
 	// Current Camera Angle
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)			
-	float m_Rotation_Angle = 0.f;
+	float RotationAngle = 0.f;
 
 	// Target Angle
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)			
-	float m_Target_Angle = 45.f;
+	float TargetAngle = 45.f;
 	
 	// Camera Rotation Speed
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)			
-	float m_Rotation_Speed = 200.f;
+	float RotationSpeed = 200.f;
 
-	float m_Camera_Zoom_Value;
-
-	
+	float CameraZoomValue;
 	/* ------- Box Push ------- */
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float moveDir = 0.f;
-
-	// Animation Blueprint Variables
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
-	bool is_Attack;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
-	bool can_Damage;
+	float MoveDirection = 0.f;
 	
-
 };

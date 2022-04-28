@@ -46,6 +46,8 @@ public:
 	UFUNCTION()
 	void SetStunned();
 	
+	UFUNCTION(BlueprintCallable, Category = "Destroy")
+	void UnbindDelegatesAndDestroy();
 
 	void CheckIfStillOverlapping();
 	void SetAttackDelayBool();
@@ -81,28 +83,21 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
 	float MovementSpeed;
-
-	// test mats
-	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
-	UMaterial* default_material;
-
-	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
-	UMaterial* red_material;
-
-	// Death boolean
+	
+	// Death bool
 	UPROPERTY(BlueprintReadWrite)
-	bool dead;
+	bool bDead;
 
 	// Death timer
 	UPROPERTY(BlueprintReadWrite)
-	float deathTimer;
+	float DeathTimer;
 	
 	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
-	bool b_attack_delay_active;
+	bool bAttackDelayActive;
 
 	// Attack Time Delay, editable in blueprint
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RadishEnemy")
-	float f_attack_delay_time;
+	float AttackDelayTime;
 
 	FTimerHandle AttackTimerHandle;
 	FTimerHandle AttackDelayTimerHandle;

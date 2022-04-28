@@ -12,7 +12,7 @@ UHealthComponent::UHealthComponent()
 
 	// Set default health value and set health value to default
 	DefaultHealth = 100.f;
-	health = DefaultHealth;
+	Health = DefaultHealth;
 }
 
 
@@ -20,7 +20,7 @@ UHealthComponent::UHealthComponent()
 void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	health = DefaultHealth;
+	Health = DefaultHealth;
 	AActor* Owner = GetOwner();
 	if(Owner)
 	{
@@ -30,30 +30,30 @@ void UHealthComponent::BeginPlay()
 
 void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamagedCauser)
 {
-	// if(Damage <= 0)
-	// {
-	// 	return;
-	// }
+	if(Damage == 0)
+	{
+		return;
+	}
 	
 
 	// Prevent health from overflowing (dealing negative damage healths the player)
-	if(health - Damage > DefaultHealth)
+	if(Health - Damage > DefaultHealth)
 	{
-		health = DefaultHealth;
+		Health = DefaultHealth;
 		return;
 	}
 
 	// Prevent health from going below 0
-	if (health - Damage <= 0)
+	if (Health - Damage <= 0)
 	{
-		health = 0;
+		Health = 0;
 		return;
 	}
 
 	// Otherwise apply damage as normal
-	health -= Damage;
+	Health -= Damage;
 
-	if(health <= 0.f)
+	if(Health <= 0.f)
 	{
 		if(!GetOwner()->ActorHasTag("Player"))
 		{

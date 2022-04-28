@@ -49,12 +49,6 @@ ARadishEnemy::ARadishEnemy()
 	}
 	AttackRange->SetCollisionProfileName(TEXT("EnemyAOE"));
 	AttackRange->OnComponentBeginOverlap.AddDynamic(this, &ARadishEnemy::OnAttackRangeOverlapBegin);
-	
-	static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("Material'/Game/StarterContent/Materials/M_Basic_Wall.M_Basic_Wall'"));
-	default_material = Material.Object;
-
-	static ConstructorHelpers::FObjectFinder<UMaterial>Material1(TEXT("Material'/Game/Fruitcake_Game/Materials/Red.Red'"));
-	red_material = Material1.Object;
 }
 
 // Called when the game starts or when spawned
@@ -62,17 +56,16 @@ void ARadishEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// Initialise hostile, stunned and attack bools
+	// Initialise hostile, stunned and attack bool
 	bHostile = false;
 	bStunned = false;
 	bAttack = false;
-	b_attack_delay_active = false;
+	bAttackDelayActive = false;
 	MovementSpeed = 20.f;
 	AttackRange->SetSphereRadius(300.f);
 	Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 
-	f_attack_delay_time = 0.6f;
-
+	AttackDelayTime = 0.6f;
 }
 
 // Called every frame
@@ -80,7 +73,7 @@ void ARadishEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if(!dead)
+	if(!bDead)
 	{
 		if (bHostile)
 			{
@@ -110,7 +103,20 @@ void ARadishEnemy::Tick(float DeltaTime)
 	
 }
 
-void ARadishEnemy::RotateTowardsPlayer() {
+void ARadishEnemy::UnbindDelegatesAndDestroy()
+{
+	// Unbind all delegates before destroying
+	CollisionComponent->OnComponentBeginOverlap.RemoveDynamic(this, &ARadishEnemy::OnOverlapBegin);
+	SightSphere->OnComponentBeginOverlap.RemoveDynamic(this, &ARadishEnemy::OnTriggerBegin);
+	SightSphere->OnComponentEndOverlap.RemoveDynamic(this, &ARadishEnemy::OnTriggerEnd);
+	AttackRange->OnComponentBeginOverlap.RemoveDynamic(this, &ARadishEnemy::OnAttackRangeOverlapBegin);
+
+	Destroy();
+}
+
+
+void ARadishEnemy::RotateTowardsPlayer()
+{
 	FVector Direction = Player->GetActorLocation() - GetActorLocation();
 	Direction.Normalize();
 	const FRotator NewLookAt = FRotationMatrix::MakeFromX(Direction).Rotator();
@@ -180,19 +186,19 @@ void ARadishEnemy::OnAttackRangeOverlapBegin(UPrimitiveComponent* OverlappedComp
 		return;
 	}
 	
-	if (OtherActor->IsA(APlayerCharacter::StaticClass()) && !b_attack_delay_active)
+	if (OtherActor->IsA(APlayerCharacter::StaticClass()) && !bAttackDelayActive)
 	{
-		GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &ARadishEnemy::CheckIfStillOverlapping, 0.1f, false, f_attack_delay_time);
+		GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &ARadishEnemy::CheckIfStillOverlapping, 0.1f, false, AttackDelayTime);
 	}
 }
 
 void ARadishEnemy::CheckIfStillOverlapping()
 {
 	// Checks if enemy attack range component is still overlapping with player, if so, attack again, with a delay of half a second
-	if (AttackRange->IsOverlappingActor(Player) && !b_attack_delay_active) 
+	if (AttackRange->IsOverlappingActor(Player) && !bAttackDelayActive) 
 	{
 		bAttack = true;
-		b_attack_delay_active = true;
+		bAttackDelayActive = true;
 		GetWorldTimerManager().SetTimer(AttackDelayTimerHandle, this, &ARadishEnemy::SetAttackDelayBool, 0.1f, false, 0.5f);
 	}
 	else 
@@ -203,10 +209,10 @@ void ARadishEnemy::CheckIfStillOverlapping()
 
 void ARadishEnemy::SetAttackDelayBool() 
 {
-	b_attack_delay_active = false;
+	bAttackDelayActive = false;
 }
 
 void ARadishEnemy::ReducePlayerHealth()
 {
-	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &ARadishEnemy::CheckIfStillOverlapping, 0.1f, false, f_attack_delay_time);
+	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &ARadishEnemy::CheckIfStillOverlapping, 0.1f, false, AttackDelayTime);
 }
