@@ -46,6 +46,7 @@ AFlowerEnemy::AFlowerEnemy()
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AFlowerEnemy::OnOverlapBegin);
 	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AFlowerEnemy::OnOverlapEnd);
 
+
 }
 
 // Called when the game starts or when spawned
@@ -61,15 +62,12 @@ void AFlowerEnemy::BeginPlay()
 	FlowerAoeAttacks = AAoeAttackController::StaticClass();
 
 	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &AFlowerEnemy::FireAtPlayer, 3.f, true, 0.5f);
-	//GetWorldTimerManager().SetTimer(AoeAttackTimerHandle, this, &AFlowerEnemy::FireAoeAtPlayer, 5.f, true, 2.f);
 }
 
 // Called every frame
 void AFlowerEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	//	FireAtPlayer();
 }
 
 void AFlowerEnemy::FireAtPlayer()
@@ -90,7 +88,7 @@ void AFlowerEnemy::FireAtPlayer()
 	//	FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
 
 		// set rotation of projectile to camera rotation
-		FRotator MuzzleRotation = CameraRotation;
+		FRotator MuzzleRotation = GetActorRotation();
 
 		UWorld* World = GetWorld();
 		if (World)
