@@ -34,3 +34,8 @@ void AMushroomJumpEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 }
 
+void AMushroomJumpEnemy::CalculateJump()
+{
+	
+}
+

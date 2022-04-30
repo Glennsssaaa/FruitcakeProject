@@ -23,6 +23,18 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0, 540.f, 0);
 	
 	SpellClass = AProjectiles::StaticClass();
+
+	if(!Root)
+	{
+		Root = CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot"));
+	}
+	
+	// Camera Tracker Set Up
+	if(!CameraTracker)
+	{
+		CameraTracker = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CameraTracker"));
+		CameraTracker->SetupAttachment(RootComponent);
+	}
 	
 	// Camera Boom Set Up
 	if (!CameraBoom)
@@ -33,7 +45,7 @@ APlayerCharacter::APlayerCharacter()
 		CameraBoom->bInheritRoll = false;
 		CameraBoom->bInheritYaw = false;
 		
-		CameraBoom->SetupAttachment(RootComponent);
+		CameraBoom->SetupAttachment(CameraTracker);
 	}
 
 	// Camera Setup
@@ -42,6 +54,7 @@ APlayerCharacter::APlayerCharacter()
 		Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 		Camera->SetupAttachment(CameraBoom);
 	}
+	
 }
 
 // Called to bind functionality to input
@@ -92,7 +105,7 @@ void APlayerCharacter::BeginPlay()
 	
 	// Dash Distance and Speed
 	DashDistance = 600.f;
-	DashSpeed = 6.f;
+	DashSpeed = 2.f;
 	bCanDash = true;
 
 	// Melee Attacks
@@ -108,7 +121,11 @@ void APlayerCharacter::BeginPlay()
 
 	// Camera 
 	CameraZoomValue = 1000.f;
-	CameraBoom->CameraLagSpeed = 3.f;
+	CameraBoom->CameraLagSpeed = 5.f;
+	CameraBoom->TargetArmLength = 375.f;
+	CameraBoom->bEnableCameraLag = true;
+
+	perftest = true;
 }
 
 
@@ -117,51 +134,52 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 	if (!UKismetMathLibrary::NearlyEqual_FloatFloat(RotationAngle, TargetAngle, 100.f * DeltaTime))
-	{
-		float Rotation_Step = RotationSpeed * DeltaTime;
-		if (TargetAngle < RotationAngle)
-		{
-			Rotation_Step *= -1;
-		}
+    {
+        float Rotation_Step = RotationSpeed * DeltaTime;
+        if (TargetAngle < RotationAngle)
+        {
+            Rotation_Step *= -1;
+        }
+   
+        RotationAngle += Rotation_Step;
+   
+        //Vector(X = cos(angle) * radius, Y = sin(angle) * radius, Z = height)
+        const FVector New_Offset = FVector(cosf(UKismetMathLibrary::DegreesToRadians(RotationAngle)) * CameraZoomValue, sinf(UKismetMathLibrary::DegreesToRadians(RotationAngle)) * CameraZoomValue, CameraZoomValue);
+        CameraBoom->TargetOffset = New_Offset;
+        CameraBoom->SetRelativeRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation() + New_Offset, GetActorLocation()));
+    }
+    else
+    {
+        RotationAngle = TargetAngle;
+    }
 
-		RotationAngle += Rotation_Step;
 
-		//Vector(X = cos(angle) * radius, Y = sin(angle) * radius, Z = height)
-		const FVector New_Offset = FVector(cosf(UKismetMathLibrary::DegreesToRadians(RotationAngle)) * CameraZoomValue, sinf(UKismetMathLibrary::DegreesToRadians(RotationAngle)) * CameraZoomValue, CameraZoomValue);
-		CameraBoom->TargetOffset = New_Offset;
-		CameraBoom->SetRelativeRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation() + New_Offset, GetActorLocation()));
-	}
-	else
-	{
-		RotationAngle = TargetAngle;
-	}
 }
 
 bool APlayerCharacter::ImprovedDashFunction()
 {
 	// get forward vector
-	CameraBoom->bEnableCameraLag = true;
-	const FRotator Rotation = GetActorRotation();
-	const FRotator Yaw(0, Rotation.Yaw, 0);
-	const FVector direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
 	bIsDashing = true;
-	PredictedLocation = (direction * DashDistance) + BaseLocation;
+	PredictedLocation = (GetActorForwardVector() * DashDistance) + BaseLocation;
 	FHitResult SweepHitResult;
-
 	// set actor location using interpolation and check if there is any collision in the way
-	SetActorLocation(FMath::VInterpTo(GetActorLocation(), PredictedLocation, GetWorld()->GetDeltaSeconds(), (DashSpeed * GetWorld()->GetDeltaSeconds()) * 50), true, &SweepHitResult);
+//	SetActorLocation(FMath::VInterpTo(GetActorLocation(), PredictedLocation, GetWorld()->GetDeltaSeconds(), (DashSpeed)), true, &SweepHitResult);
+	CameraBoom->bEnableCameraLag = false;
+
+	SetActorLocation(FMath::Lerp(GetActorLocation(), PredictedLocation, GetWorld()->GetDeltaSeconds() * DashSpeed), true, &SweepHitResult);
+	
 	
 	const FVector2D ActorLocation2D = FVector2D(GetActorLocation().X, GetActorLocation().Y);
 	const FVector2D PredictedLocation2D = FVector2D(PredictedLocation.X, PredictedLocation.Y);
-
 	if (SweepHitResult.bBlockingHit || ActorLocation2D.Equals(PredictedLocation2D, 100.f))
 	{
 		EnableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 		GetWorld()->GetTimerManager().ClearTimer(DashTimer);
 		bIsDashing = false;
 		GetWorld()->GetTimerManager().SetTimer(DashCooldownTimer, this, &APlayerCharacter::DashCooldownFunction, DashCooldown, false);
+		CameraBoom->bEnableCameraLag = true;
 		return true;
 	}
 	return false;
@@ -322,6 +340,16 @@ void APlayerCharacter::CastProjectileMethod()
 
 		}
 	}
+}
+
+void APlayerCharacter::CastProjectile()
+{
+	if(!bCanMove)
+	{
+		return;
+	}
+
+	
 }
 
 void APlayerCharacter::ResetProjectile()

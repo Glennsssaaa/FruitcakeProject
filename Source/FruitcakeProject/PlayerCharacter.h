@@ -72,6 +72,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void CastProjectileMethod();
 
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void CastProjectile();
+	
 	void ResetProjectile();
 
 	void RotatePlayerToCursor();
@@ -88,7 +91,13 @@ protected:
 	float TurnRate;
 	float LookRate;
 	bool bIsDashing;
+	bool perftest;
+	// Camera Tracker Object
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* CameraTracker;
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+    USceneComponent* Root;
 	/* ------ Player Melee Attack ------ */
 	float MeleeCooldownTimer;
 	FTimerHandle MeleeTimerHandle;

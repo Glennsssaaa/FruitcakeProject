@@ -64,7 +64,7 @@ void ARadishEnemy::BeginPlay()
 	MovementSpeed = 20.f;
 	AttackRange->SetSphereRadius(300.f);
 	Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-
+	bJustDamaged = false;
 	AttackDelayTime = 0.6f;
 }
 
@@ -75,7 +75,12 @@ void ARadishEnemy::Tick(float DeltaTime)
 
 	if(!bDead)
 	{
-		if (bHostile)
+		if(bJustDamaged)
+		{
+			// Go backwards
+			AddMovementInput(GetActorForwardVector() * (-MovementSpeed * DeltaTime));
+		}
+		else if (bHostile)
 			{
 			// If enemy is hostile, move towards player
 			FVector Direction = Player->GetActorLocation() - GetActorLocation();
@@ -99,6 +104,25 @@ void ARadishEnemy::Tick(float DeltaTime)
 			// If enemy is not hostile, do nothing
 		}
 		RotateTowardsPlayer();
+
+		// Raycast to see if player is in sight
+		FHitResult HitResult;
+		FVector Start = GetActorLocation();
+		FVector End = Start + (GetActorForwardVector() * 1000.f);
+		FCollisionQueryParams CollisionParams;
+		CollisionParams.AddIgnoredActor(this);
+		bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollisionParams);
+		if (bHit)
+		{
+			if (HitResult.GetActor()->IsA(APlayerCharacter::StaticClass()))
+			{
+				bHostile = true;
+			}
+			else
+			{
+				bHostile = false;
+			}
+		}
 	}
 	
 }

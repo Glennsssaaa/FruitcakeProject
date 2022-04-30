@@ -14,7 +14,7 @@ AFlowerEnemy::AFlowerEnemy()
 
 	if (!CollisionComponent)
 	{
-		// Set Collsion box to be sphere.
+		// Set Collision box to be sphere.
 		CollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 		// Set collision box radius.
 		CollisionComponent->SetBoxExtent(FVector(90.f, 90.f, 90.f));
@@ -51,7 +51,7 @@ void AFlowerEnemy::BeginPlay()
 void AFlowerEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 	// Rotate the enemy to face the player.
 	FVector Direction = PlayerCharacter->GetActorLocation() - GetActorLocation();
 	FRotator NewRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
@@ -65,21 +65,37 @@ void AFlowerEnemy::Tick(float DeltaTime)
 
 void AFlowerEnemy::CallFireAtPlayer()
 {
+	// Raycast to see if player is in sight
+	FHitResult HitResult;
+	FVector Start = GetActorLocation();
+	FVector End = Start + (GetActorForwardVector() * 1000.f);
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.AddIgnoredActor(this);
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollisionParams);
+
+	if(!bHit)
+	{
+		return;
+	}
+
+	if(HitResult.GetActor()->IsA(APlayerCharacter::StaticClass()) == false)
+	{
+		return;
+	}
+	
 	bIsShooting = true;
 }
 
 
 void AFlowerEnemy::FireAtPlayer()
 {
-
 	if (FlowerProjectiles)
 	{
-		FVector SpawnLocation;
 		FRotator CameraRotation;
 		//	GetActorEyesViewPoint(CameraLocation, CameraRotation);
 
 
-		SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z);
+		FVector SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z);
 		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
 		MuzzleOffset.Set(100.0f, 40.0f, 0.0f);
 
