@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/SplineComponent.h"
 #include "GameFramework/Character.h"
 #include "MushroomJumpEnemy.generated.h"
 
@@ -26,24 +27,73 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void CalculateJump();
+	bool CalculateJump();
+	void ResetJump();
+	void JumpTowardsPlayer();
 	
 protected:
 
 	// Spline jump variables
+
+#pragma region Jump Variables
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MushroomEnemy")
 	FVector JumpTo;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MushroomEnemy")
 	FVector JumpFrom;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MushroomEnemy")
 	float JumpDistance;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MushroomEnemy")
 	float JumpHeight;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MushroomEnemy")
 	float JumpSpeed;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MushroomEnemy")
 	float MinimumJumpDistance;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MushroomEnemy")
 	float MaximumJumpDistance;
 	
-	bool bIsJumping;
-	bool bReadyToJump;
-	bool bIsLandingVertical;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MushroomEnemy")
+	TArray<FVector> SplinePoints;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MushroomEnemy")
+	bool bIsJumping;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MushroomEnemy")
+	bool bReadyToJump;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MushroomEnemy")
+	bool bIsLandingVertical;
 
+#pragma endregion
 
+	
+	// Set Up Timeline
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timeline")
+	class UTimelineComponent* JumpTimelineComponent;
+
+	// Detection Sphere Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MushroomEnemy")
+	class USphereComponent* DetectionSphere;
+
+	// Mushroom Capsule Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MushroomEnemy")
+	class UCapsuleComponent* MushroomCapsule;
+
+	// Mushroom Jump Timer Handle
+	FTimerHandle JumpTimerHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MushroomEnemy")
+	USplineComponent* MushroomJumpSpline;
+
+	// Flower projectiles spawn class (Vector)
+	UPROPERTY()
+	TSubclassOf<class AAoeAttackController> MushroonmAoeAttackController;
+	
+	UPROPERTY()
+	AActor* Player;
 };
