@@ -12,13 +12,6 @@
 
 #include "GameFramework/MovementComponent.h"
 
-<<<<<<< Updated upstream
-#include "Particles/ParticleSystem.h"
-=======
-#include "NiagaraComponent.h"
-#include "NiagaraFunctionLibrary.h"
->>>>>>> Stashed changes
-
 #include "RadishEnemy.generated.h"
 
 UCLASS(Blueprintable)
@@ -38,10 +31,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void FireAtPlayer();
-
-	void FireAoeAtPlayer();
-
 	UFUNCTION()
 		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
@@ -50,13 +39,22 @@ public:
 	UFUNCTION()
 		void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 
-	UFUNCTION()
-		void OnWeakPointOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	// Weak Point Collision Functions 
+	//UFUNCTION()
+	//	void OnWeakPointOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	// Sight Sphere Collision Functions
 	UFUNCTION()
 		void OnTriggerBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 		void OnTriggerEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	// Attack Range Collision Functions
+	UFUNCTION()
+		void OnAttackRangeOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+		void OnAttackRangeOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 		void ReducePlayerHealth();
@@ -64,60 +62,52 @@ public:
 	UFUNCTION()
 		void SetStunned();
 
-	UFUNCTION()
-		void Kill();
+	UFUNCTION(BlueprintCallable, Category = "C++ Functions")
+		bool CheckForOverlapMethod();
+
+	void CheckIfStillOverlapping();
+	void SetAttackDelayBool();
+	void RotateTowardsPlayer();
 protected:
 
 	// pointer to player character
 	class APlayerCharacter* PlayerCharacter;
 
 	FTimerHandle AttackTimerHandle;
-	FTimerHandle AoeAttackTimerHandle;
+	FTimerHandle AttackDelayTimerHandle;
 	FTimerHandle StunTimerHandle;
 
-	//Sphere collision component.
+
+	// Sphere collision component.
 	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
 		UBoxComponent* CollisionComponent;
 
-	//Sphere Weak Point Static Mesh
-	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
-		UStaticMeshComponent* WeakPointMeshComponent;
+	//// Sphere Weak Point Static Mesh
+	//UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
+	//	UStaticMeshComponent* WeakPointMeshComponent;
 
 	// Sphere range detection
 	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
 		USphereComponent* SightSphere;
 
+	// Attack Range Collision Component
 	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
-<<<<<<< Updated upstream
-=======
 		USphereComponent* AttackRange;
-
-	//Attack Particle System Component
-	UPROPERTY(BlueprintReadWrite)
-		UNiagaraComponent* AttackVFX;
 
 	// Sets if enemy is moving towards player or not
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RadishEnemy")
->>>>>>> Stashed changes
 		bool bHostile;
 
+	// Sets if enemy is stunned or not
 	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
 		bool bStunned;
 
+	// Sets if enemy is attacking or not
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RadishEnemy")
+		bool bAttack;
+
 	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
 		float MovementSpeed;
-
-	// Radish projectiles spawn class (Vector)
-	UPROPERTY(EditDefaultsOnly, Category = "RadishEnemy")
-		TSubclassOf<class AProjectiles> RadishProjectiles;
-
-	// AOE attack spawn class (Vector)
-	UPROPERTY(EditDefaultsOnly, Category = "RadishEnemy")
-		TSubclassOf<class AAoeAttackController> RadishAoeAttacks;
-
-	// Gun muzzle offset from the camera location
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RadishEnemy")
-		FVector MuzzleOffset;
 
 	//test mats
 	UPROPERTY(VisibleDefaultsOnly, Category = "RadishEnemy")
@@ -128,11 +118,18 @@ protected:
 
 	//death boolean
 	UPROPERTY(BlueprintReadWrite)
-		bool dead;
+	bool dead;
 
 	//death timer
 	UPROPERTY(BlueprintReadWrite)
-		float deathTimer;
-
+	float deathTimer;
+	
 	int health_pool;
+	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
+		bool b_attack_delay_active;
+
+	// Attack Time Delay, editable in blueprint
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RadishEnemy")
+		float f_attack_delay_time;
+
 };

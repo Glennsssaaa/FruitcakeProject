@@ -2,17 +2,20 @@
 
 #include "AoeAttackController.h"
 #include "Engine/Engine.h"
+#include "Engine/DecalActor.h"
+#include "Components/DecalComponent.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 
 // Sets default values
 AAoeAttackController::AAoeAttackController()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
+	// Collision Component Set Up
 	if (!CollisionComponent)
 	{
-		// Set Collsion box to be sphere.
+		// Set Collision box to be sphere.
 		CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 		// Set collision box radius.
 		CollisionComponent->InitSphereRadius(500.0f);
@@ -20,6 +23,7 @@ AAoeAttackController::AAoeAttackController()
 		RootComponent = CollisionComponent;
 	}
 
+	// Projectile Movement Component Set Up
 	if (!ProjectileMovementComponent)
 	{
 		// Use this component to drive projectile movement.
@@ -31,38 +35,38 @@ AAoeAttackController::AAoeAttackController()
 		ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
 	}
 
-	if (!ProjectileMeshComponent)
+	// Projectile Mesh Set Up
+
+
+	// Decal Set Up
+	if (!AOEIndicatorComponent)
 	{
 		// sets mesh of projectile to basic sphere mesh, loaded from unreal engine files
-		ProjectileMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProjectileMeshComponent"));
-		static ConstructorHelpers::FObjectFinder<UStaticMesh>Mesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder'"));
-		if (Mesh.Succeeded())
+		AOEIndicatorComponent = CreateDefaultSubobject<UDecalComponent>(TEXT("DecalComponent"));
+		static ConstructorHelpers::FObjectFinder<UMaterial>DecalMaterial(TEXT("Material'/Game/Fruitcake_Game/Enemies/EnemyAssets/Mushroom/AOEDecal.AOEDecal'"));
+		if (DecalMaterial.Succeeded())
 		{
-			ProjectileMeshComponent->SetStaticMesh(Mesh.Object);
+			// Set Decal Material
+			AOEIndicatorComponent->SetDecalMaterial(DecalMaterial.Object);
 		}
 		// set how long projectile will last in seconds, after this amount of time, projectile is destroyed
-		InitialLifeSpan = 2.6f;
+		AOEIndicatorComponent->DecalSize = FVector(400.0f, 400.0f, 400.0f);
+		AOEIndicatorComponent->SetupAttachment(RootComponent);
 	}
 
 	// Load material for projectile from unreal files
 	static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("Material'/Game/Fruitcake_Game/Materials/Red.Red'"));
 	if (Material.Succeeded())
 	{
-		ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
+	//	ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
 	}
 
 	static ConstructorHelpers::FObjectFinder<UMaterial>BlueMaterial(TEXT("Material'/Game/Fruitcake_Game/Materials/Blue.Blue'"));
 	if (BlueMaterial.Succeeded())
 	{
-		BlueMaterialInstance = UMaterialInstanceDynamic::Create(BlueMaterial.Object, ProjectileMeshComponent);
+	//	BlueMaterialInstance = UMaterialInstanceDynamic::Create(BlueMaterial.Object, ProjectileMeshComponent);
 	}
-	ProjectileMeshComponent->SetMaterial(0, ProjectileMaterialInstance);
 
-	ProjectileMeshComponent->BodyInstance.SetCollisionProfileName(TEXT("EnemyAOE"));
-
-	// Set size of projectile
-	ProjectileMeshComponent->SetRelativeScale3D(FVector(10.f, 10.f, .05f));
-	ProjectileMeshComponent->SetupAttachment(RootComponent);
 
 	// Event called when component hits something.
 	CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("EnemyAOE"));
@@ -83,12 +87,6 @@ void AAoeAttackController::BeginPlay()
 
 }
 
-// Called every frame
-void AAoeAttackController::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
 
 void AAoeAttackController::FireAtLocation(const FVector& SpawnLoaction, const float& AoeSize)
 {
@@ -96,7 +94,6 @@ void AAoeAttackController::FireAtLocation(const FVector& SpawnLoaction, const fl
 
 	// SpawnLocation = AOE Spawn Location, to make AOE spawn on ground, spawn at ActorLocation - 90
 	CollisionComponent->SetSphereRadius(AoeSize * 50);
-	ProjectileMeshComponent->SetRelativeScale3D(FVector(AoeSize, AoeSize, .05f));
 
 	ProjectileMovementComponent->Velocity = SpawnLoaction * ProjectileMovementComponent->InitialSpeed;
 }
@@ -108,11 +105,9 @@ void AAoeAttackController::GetTarget()
 
 void AAoeAttackController::ActivateAOE()
 {
-	ProjectileMeshComponent->SetMaterial(0, BlueMaterialInstance);
-
 	if (CollisionComponent->IsOverlappingActor(PlayerCharacter))
 	{
-		PlayerCharacter->ReducePlayerHealth();
+		PlayerCharacter->TakeDamage(10.f, FDamageEvent(), nullptr, this);
 	}
 }
 
