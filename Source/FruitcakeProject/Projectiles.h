@@ -54,10 +54,10 @@ protected:
 
 	// Projectile materials
 	UPROPERTY(VisibleDefaultsOnly, Category = Movement)
-		UMaterialInstanceDynamic* ProjectileMaterialInstance;
+		UMaterialInstanceDynamic* ProjectileMaterialInstancePlayer;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = Movement)
-		UMaterialInstance* ProjectileMaterialInstanceEnemy;
+		UMaterialInstanceDynamic* ProjectileMaterialInstanceEnemy;
 
 	// Sphere collision component.
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
