@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "GameFramework/Pawn.h"
 #include "Components/BoxComponent.h"
 
 #include "FlowerEnemy.generated.h"
 
 UCLASS(Blueprintable)
-class FRUITCAKEPROJECT_API AFlowerEnemy : public AActor
+class FRUITCAKEPROJECT_API AFlowerEnemy : public APawn
 {
 	GENERATED_BODY()
 	
@@ -25,9 +25,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void FireAtPlayer();
+	void CallFireAtPlayer();
 	
-	void FireAoeAtPlayer();
+	UFUNCTION(BlueprintCallable, Category = "EnemyAttack")
+	void FireAtPlayer();
+
+
 
 	UFUNCTION()
 		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -36,28 +39,24 @@ public:
 protected:
 
 	// pointer to player character
+	UPROPERTY()
 	class APlayerCharacter* PlayerCharacter;
 
 	FTimerHandle AttackTimerHandle;
 	FTimerHandle AoeAttackTimerHandle;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsShooting;
+	
 	// Sphere collision component.
 	UPROPERTY(VisibleDefaultsOnly, Category = "FlowerEnemy")
-		UBoxComponent* CollisionComponent;
-
-	// Sphere Static Mesh
-	UPROPERTY(VisibleDefaultsOnly, Category = "FlowerEnemy")
-		UStaticMeshComponent* FlowerEnemyMeshComponent;
+	UBoxComponent* CollisionComponent;
 
 	// Flower projectiles spawn class (Vector)
 	UPROPERTY(EditDefaultsOnly, Category = "FlowerEnemy")
-		TSubclassOf<class AProjectiles> FlowerProjectiles;
-
-	// AOE attack spawn class (Vector)
-	UPROPERTY(EditDefaultsOnly, Category = "FlowerEnemy")
-		TSubclassOf<class AAoeAttackController> FlowerAoeAttacks;
+	TSubclassOf<class AProjectiles> FlowerProjectiles;
 
 	// Gun muzzle offset from the camera location
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FlowerEnemy")
-		FVector MuzzleOffset;
+	FVector MuzzleOffset;
 };
