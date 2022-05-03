@@ -105,6 +105,7 @@ AProjectiles::AProjectiles()
 // Called when the game starts or when spawned
 void AProjectiles::BeginPlay()
 {
+	InitialLifeSpan = 1.5f;
 	Super::BeginPlay();
 
 	PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
