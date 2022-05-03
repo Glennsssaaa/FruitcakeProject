@@ -45,7 +45,8 @@ AAoeAttackController::AAoeAttackController()
 void AAoeAttackController::BeginPlay()
 {
 	Super::BeginPlay();
-	AoeLifeSpan = 3.f;
+	AoeDecal->SetVisibility(true);
+	AoeLifeSpan = 2.f;
 	// Set timer until aoe attack is destroyed
 	GetWorld()->GetTimerManager().SetTimer(AoeTimerHandle, this, &AAoeAttackController::ActivateAoe, AoeLifeSpan, false);
 }
@@ -55,8 +56,8 @@ void AAoeAttackController::ActivateAoe()
 	if(AoeCollisionSphere->IsOverlappingActor(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)))
 	{
 		UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->TakeDamage(1.f, FDamageEvent(), nullptr, nullptr);
-		Destroy();
 	}
+	Destroy();
 }
 
 

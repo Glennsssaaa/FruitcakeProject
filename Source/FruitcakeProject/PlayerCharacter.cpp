@@ -105,7 +105,7 @@ void APlayerCharacter::BeginPlay()
 	
 	// Dash Distance and Speed
 	DashDistance = 600.f;
-	DashSpeed = 2.f;
+	DashSpeed = 1.33f;
 	bCanDash = true;
 
 	// Melee Attacks

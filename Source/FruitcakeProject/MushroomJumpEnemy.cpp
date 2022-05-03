@@ -3,7 +3,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/TimelineTemplate.h"
 #include "Components/CapsuleComponent.h"
-#include "AoeAttackController.h"
+#include "Components/SplineComponent.h"
 #include "Components/SphereComponent.h"
 #include "MushroomJumpEnemy.h"
 
@@ -12,47 +12,60 @@ AMushroomJumpEnemy::AMushroomJumpEnemy()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 	// Get capsule component
-	MushroomCapsule = GetCapsuleComponent();
-	MushroomCapsule->SetCollisionProfileName(TEXT("Enemy"));
-	
-	// Create Mushroom Spline Component
-	if(!MushroomJumpSpline)
+	if(!MushroomCapsule)
 	{
-		MushroomJumpSpline = CreateDefaultSubobject<USplineComponent>(TEXT("MushroomJumpSpline"));
-		MushroomJumpSpline->SetupAttachment(RootComponent);
+		MushroomCapsule = GetCapsuleComponent();
+		MushroomCapsule->SetCollisionProfileName(TEXT("Enemy"));
 	}
 
-	// Create Jump Timeline
-	if(!JumpTimelineComponent)
-	{
-		JumpTimelineComponent = CreateDefaultSubobject<UTimelineComponent>(TEXT("JumpTimeline"));
-	}
+
+
+	MushroomJumpSpline = CreateDefaultSubobject<USplineComponent>(TEXT("MushroomJumpSpline"));
+	MushroomJumpSpline->SetupAttachment(RootComponent);
+	MushroomJumpSpline->SetAbsolute(true, true, true);
+	// Set up mushroom spline component
+	MushroomJumpSpline->SetVisibility(true, true);
+
+
+	// Add overlap function to capsule
+	MushroomCapsule->OnComponentBeginOverlap.AddDynamic(this, &AMushroomJumpEnemy::OnOverlapBegin);
+	
 
 	// Create Detection Sphere Component
 	if(!DetectionSphere)
 	{
 		DetectionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("DetectionSphere"));
+		DetectionSphere->InitSphereRadius(1200.f);
+		DetectionSphere->SetCollisionProfileName(TEXT("AICollision"));
 		DetectionSphere->SetupAttachment(RootComponent);
 	}
+
+
 }
 
 // Called when the game starts or when spawned
 void AMushroomJumpEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	ResetJump();
-	MushroomJumpSpline->Duration = 1.f;
-	
+	ResetJumpNew();
 
+
+
+
+
+	
+	bIsJumping = false;
 	Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	MushroomAoeAttackController = AAoeAttackController::StaticClass();
 
-	JumpTimelineComponent->SetPlayRate(JumpSpeed);
-	
-	// Set up Jump Timer Handle
-	GetWorldTimerManager().SetTimer(JumpTimerHandle, this, &AMushroomJumpEnemy::JumpTowardsPlayer, 5.f, true);
-	
+	bIsJumping = true;
+	bReadyToJump = true;
+	bIsLandingVertical = true;
+	MinimumJumpDistance = 500.f;
+	MaximumJumpDistance = 5000.f;
+	JumpSpeed = 1.25f;
+	JumpHeight = 0.35f;
 }
 
 // Called every frame
@@ -68,15 +81,15 @@ void AMushroomJumpEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-bool AMushroomJumpEnemy::CalculateJump()
+bool AMushroomJumpEnemy::CalculateJumpNew()
 {
 	// Set JumpTo to player character location
 	JumpTo = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->GetActorLocation();
 	
-	JumpDistance = FVector::Dist(GetActorLocation(), JumpTo);
+	JumpDistance = FVector::Dist(JumpTo, GetActorLocation());
 
 	// Check if jump distance is in between min and max
-	if (JumpDistance > MinimumJumpDistance && JumpDistance < MaximumJumpDistance)
+	if (JumpDistance >= MinimumJumpDistance && JumpDistance <= MaximumJumpDistance)
 	{
 		bReadyToJump = true;
 	}
@@ -87,77 +100,103 @@ bool AMushroomJumpEnemy::CalculateJump()
 
 	if(!bReadyToJump)
 	{
-		ResetJump();
+		ResetJumpNew();
 		return false;
 	}
 
 	JumpFrom = GetActorLocation();
 
 	/* Set Spline Points */
-
-	// Spline Point One
-	SplinePoints.Add(JumpFrom);
 	
 	// Spline Point Two
 	FVector Midpoint = (JumpFrom + JumpTo) / 2;
-	Midpoint += FVector(0, 0, JumpHeight);
-	SplinePoints.Add(Midpoint);
+	Midpoint += FVector(0, 0, JumpHeight * JumpDistance);
 	
-	// Spline Point Three
-	SplinePoints.Add(JumpTo);
-
+	// set mushroom jump spline points
+	
+	
 	// Set Spline
-	MushroomJumpSpline->SetSplinePoints(SplinePoints, ESplineCoordinateSpace::World, true);
 
+	// Make Array
+	TArray<FVector> SplinePointsArray;
+	SplinePointsArray.Add(JumpFrom);
+	SplinePointsArray.Add(Midpoint);
+	SplinePointsArray.Add(JumpTo);
+	
+	
+	MushroomJumpSpline->SetSplinePoints(SplinePointsArray, ESplineCoordinateSpace::World, true);
+
+	
 	// Set Tangent at Spline Point Two
 
 	// Clamp Jump Distance
-	JumpDistance = FMath::Clamp(JumpDistance, MinimumJumpDistance, MaximumJumpDistance);
+	JumpDistance = FMath::Clamp(JumpDistance, 0.f, 2000.f);
 	const FVector Tangent = JumpDistance * FVector(0.f, 0.f, -1.f);
 	MushroomJumpSpline->SetTangentsAtSplinePoint(2, Tangent, Tangent, ESplineCoordinateSpace::World, true);
 
-	
 	
 	return true;
 }
 
 
 
-void AMushroomJumpEnemy::JumpTowardsPlayer()
+bool AMushroomJumpEnemy::JumpTowardsPlayerNew()
 {
 	// Check if overlapping player
-	if (!DetectionSphere->IsOverlappingActor(Player))
+	// if (!DetectionSphere->IsOverlappingActor( UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)))
+	// {
+	// //	return false;
+	// }
+	//
+	// if (bIsJumping)
+	// {
+	// //	return false;
+	// }
+	//
+	//
+	//
+	// bIsJumping = false;
+
+
+	
+	if(!CalculateJumpNew())
 	{
-		return;
+		return false;
 	}
 
-	if (bIsJumping)
-	{
-		return;
-	}
 
-	if(!CalculateJump())
-	{
-		return;
-	}
-
+	bIsJumping = false;
+	
 	// Spawn AOE
-	FActorSpawnParameters SpawnParams;
+	FActorSpawnParameters SpawnParams = FActorSpawnParameters();
 	SpawnParams.Owner = this;
-	SpawnParams.Instigator = this;
-	GetWorld()->SpawnActor<AAoeAttackController>(MushroonmAoeAttackController, GetActorLocation(), GetActorRotation(), SpawnParams);
-
+	SpawnParams.Instigator = GetInstigator();
+	FVector SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z - 80.f);
+	GetWorld()->SpawnActor<AAoeAttackController>(MushroomAoeAttackController, UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->GetActorLocation(), FRotator(0,0,0), SpawnParams);
+	
 	bReadyToJump = false;
 	bIsJumping = true;
 	Jump();
 
-	// Play jump timeline
-	JumpTimelineComponent->PlayFromStart();
-	
-	
+	return true;
 }
 
-void AMushroomJumpEnemy::ResetJump()
+
+
+void AMushroomJumpEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if(!OtherActor->IsA(APlayerCharacter::StaticClass()))
+	{
+		return;
+	}
+
+	if(OverlappedComp->GetCollisionProfileName() == "PlayerAttack")
+	{
+		TakeDamage(1.f, FDamageEvent(), nullptr, this);
+	}
+}
+
+void AMushroomJumpEnemy::ResetJumpNew()
 {
 	JumpTo = FVector(0, 0, 0);
 	JumpFrom = FVector(0, 0, 0);

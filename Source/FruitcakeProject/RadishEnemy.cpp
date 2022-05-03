@@ -72,58 +72,61 @@ void ARadishEnemy::BeginPlay()
 void ARadishEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if(!bDead)
+	
+	if(bDead)
 	{
-		if(bJustDamaged)
+		return;
+	}
+	
+	if(bJustDamaged)
+	{
+		// Go backwards
+		AddMovementInput(GetActorForwardVector() * (-MovementSpeed * DeltaTime));
+	}
+	else if (bHostile && !bAttack)
+	{
+	// If enemy is hostile, move towards player
+	FVector Direction = Player->GetActorLocation() - GetActorLocation();
+	// if enemy too close to player, stop moving
+
+	if (Direction.Size() > 100)
+	{
+		Direction.Normalize();
+		AddMovementInput(Direction, MovementSpeed * DeltaTime);
+	}
+
+
+	}
+	else if (bStunned) {
+		// If enemy is stunned, do nothing
+		FVector Direction = Player->GetActorLocation() + GetActorLocation();
+		Direction.Normalize();
+		AddMovementInput(Direction, MovementSpeed * DeltaTime);
+	}
+	else {
+		// If enemy is not hostile, do nothing
+	}
+	RotateTowardsPlayer();
+
+	// Raycast to see if player is in sight
+	FHitResult HitResult;
+	FVector Start = GetActorLocation();
+	FVector End = Start + (GetActorForwardVector() * 1000.f);
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.AddIgnoredActor(this);
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollisionParams);
+	if (bHit)
+	{
+		if (HitResult.GetActor()->IsA(APlayerCharacter::StaticClass()))
 		{
-			// Go backwards
-			AddMovementInput(GetActorForwardVector() * (-MovementSpeed * DeltaTime));
+			bHostile = true;
 		}
-		else if (bHostile)
-			{
-			// If enemy is hostile, move towards player
-			FVector Direction = Player->GetActorLocation() - GetActorLocation();
-			// if enemy too close to player, stop moving
-
-			if (Direction.Size() > 100)
-			{
-				Direction.Normalize();
-				AddMovementInput(Direction, MovementSpeed * DeltaTime);
-			}
-
-
-		}
-		else if (bStunned) {
-			// If enemy is stunned, do nothing
-			FVector Direction = Player->GetActorLocation() + GetActorLocation();
-			Direction.Normalize();
-			AddMovementInput(Direction, MovementSpeed * DeltaTime);
-		}
-		else {
-			// If enemy is not hostile, do nothing
-		}
-		RotateTowardsPlayer();
-
-		// Raycast to see if player is in sight
-		FHitResult HitResult;
-		FVector Start = GetActorLocation();
-		FVector End = Start + (GetActorForwardVector() * 1000.f);
-		FCollisionQueryParams CollisionParams;
-		CollisionParams.AddIgnoredActor(this);
-		bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollisionParams);
-		if (bHit)
+		else
 		{
-			if (HitResult.GetActor()->IsA(APlayerCharacter::StaticClass()))
-			{
-				bHostile = true;
-			}
-			else
-			{
-				bHostile = false;
-			}
+			bHostile = false;
 		}
 	}
+	
 	
 }
 
