@@ -77,11 +77,10 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+
 
 	// Fire Aoe Attack at specific location
-	void FireAtLocation(const FVector& SpawnLoaction, const float& AoeSize);
+	void FireAtLocation(const FVector& SpawnLocation, const float& AoeSize);
 
 	// Get Target Enemy (Maybe not necessary)
 	void GetTarget();
@@ -95,10 +94,12 @@ protected:
 
 	class APlayerCharacter* PlayerCharacter;
 
-	// Sphere Static Mesh
-	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
-		UStaticMeshComponent* ProjectileMeshComponent;
 
+
+	// AOE Indicator Decal
+	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
+	UDecalComponent* AOEIndicatorComponent;
+	
 	// Projectile material
 	UPROPERTY(VisibleDefaultsOnly, Category = Movement)
 		UMaterialInstanceDynamic* ProjectileMaterialInstance;
