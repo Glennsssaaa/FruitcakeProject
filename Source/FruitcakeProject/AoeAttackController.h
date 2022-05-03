@@ -77,51 +77,26 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	void ActivateAoe();
 
-
-	// Fire Aoe Attack at specific location
-	void FireAtLocation(const FVector& SpawnLocation, const float& AoeSize);
-
-	// Get Target Enemy (Maybe not necessary)
-	void GetTarget();
-
-	void ActivateAOE();
+	
 protected:
 
-	// Pointer to player character, used to access their location at all times, which is used for targetting them with AOE attacks
-	bool isPlayerHit = false;
-	FTimerHandle AOEActivateTimer;
+	// AOE Collision Sphere Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USphereComponent* AoeCollisionSphere;
 
-	class APlayerCharacter* PlayerCharacter;
+	// AOE Timer Handle
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components");
+	FTimerHandle AoeTimerHandle;
 
+	// AOE Decal
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	UDecalComponent* AoeDecal;
 
+	// AOE Decal Material
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	UMaterialInterface* AoeDecalMaterial;
 
-	// AOE Indicator Decal
-	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
-	UDecalComponent* AOEIndicatorComponent;
-	
-	// Projectile material
-	UPROPERTY(VisibleDefaultsOnly, Category = Movement)
-		UMaterialInstanceDynamic* ProjectileMaterialInstance;
-
-	// Projectile material
-	UPROPERTY(VisibleDefaultsOnly, Category = Movement)
-		UMaterialInstanceDynamic* BlueMaterialInstance;
-
-	//UMaterialInterface* Material;
-
-	// Sphere collision component.
-	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
-		USphereComponent* CollisionComponent;
-
-	// Box collision component.
-	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
-		UBoxComponent* BoxCollisionComponent;
-	// Decal Component
-	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
-		UDecalComponent* AOECircleComponent;
-
-	// Projectile movement component.
-	UPROPERTY(VisibleAnywhere, Category = Movement)
-		UProjectileMovementComponent* ProjectileMovementComponent;
+	float AoeLifeSpan;
 };
