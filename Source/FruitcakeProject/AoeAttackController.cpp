@@ -1,65 +1,114 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "AoeAttackController.h"
+#include "Engine/Engine.h"
 #include "Engine/DecalActor.h"
 #include "Components/DecalComponent.h"
-#include "Components/SphereComponent.h"
-
-#include "Kismet/GameplayStatics.h"
+#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 
 // Sets default values
 AAoeAttackController::AAoeAttackController()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-	
-	// Set up AOE Collision Sphere
-	if(!AoeCollisionSphere)
+
+	// Collision Component Set Up
+	if (!CollisionComponent)
 	{
-		AoeCollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AoeCollisionSphere"));
-		AoeCollisionSphere->SetSphereRadius(256.f);
-		AoeCollisionSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-		AoeCollisionSphere->SetCollisionProfileName(TEXT("EnemyAOE"));
-		RootComponent = AoeCollisionSphere;
+		// Set Collision box to be sphere.
+		CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
+		// Set collision box radius.
+		CollisionComponent->InitSphereRadius(500.0f);
+		// Set the root component to be newly created component.
+		RootComponent = CollisionComponent;
 	}
 
-	// Set up AOE Decal Material
-	if(!AoeDecalMaterial)
+	// Projectile Movement Component Set Up
+	if (!ProjectileMovementComponent)
 	{
-		AoeDecalMaterial = ConstructorHelpers::FObjectFinder<UMaterial>(TEXT("Material'/Game/Fruitcake_Game/Enemies/EnemyAssets/Mushroom/AOEDecal.AOEDecal'")).Object;
+		// Use this component to drive projectile movement.
+		ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
+		ProjectileMovementComponent->SetUpdatedComponent(CollisionComponent);
+		ProjectileMovementComponent->InitialSpeed = 0.0f;
+		ProjectileMovementComponent->MaxSpeed = 0.0f;
+		ProjectileMovementComponent->bRotationFollowsVelocity = true;
+		ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
 	}
-	
-	// Set up AOE Decal
-	if(!AoeDecal)
+
+	// Projectile Mesh Set Up
+
+
+	// Decal Set Up
+	if (!AOEIndicatorComponent)
 	{
-		AoeDecal = CreateDefaultSubobject<UDecalComponent>(TEXT("AoeDecal"));
-		AoeDecal->DecalSize = FVector(128.f, 256.f, 256.f);
-		AoeDecal->SetRelativeRotation(FRotator(90.f, 0.f, 0.f));
-		// Assign Decal Material
-		AoeDecal->SetDecalMaterial(AoeDecalMaterial);
-		AoeDecal->SetupAttachment(RootComponent);
+		// sets mesh of projectile to basic sphere mesh, loaded from unreal engine files
+		AOEIndicatorComponent = CreateDefaultSubobject<UDecalComponent>(TEXT("DecalComponent"));
+		static ConstructorHelpers::FObjectFinder<UMaterial>DecalMaterial(TEXT("Material'/Game/Fruitcake_Game/Enemies/EnemyAssets/Mushroom/AOEDecal.AOEDecal'"));
+		if (DecalMaterial.Succeeded())
+		{
+			// Set Decal Material
+			AOEIndicatorComponent->SetDecalMaterial(DecalMaterial.Object);
+		}
+		// set how long projectile will last in seconds, after this amount of time, projectile is destroyed
+		AOEIndicatorComponent->DecalSize = FVector(400.0f, 400.0f, 400.0f);
+		AOEIndicatorComponent->SetupAttachment(RootComponent);
 	}
+
+	// Load material for projectile from unreal files
+	static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("Material'/Game/Fruitcake_Game/Materials/Red.Red'"));
+	if (Material.Succeeded())
+	{
+	//	ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
+	}
+
+	static ConstructorHelpers::FObjectFinder<UMaterial>BlueMaterial(TEXT("Material'/Game/Fruitcake_Game/Materials/Blue.Blue'"));
+	if (BlueMaterial.Succeeded())
+	{
+	//	BlueMaterialInstance = UMaterialInstanceDynamic::Create(BlueMaterial.Object, ProjectileMeshComponent);
+	}
+
+
+	// Event called when component hits something.
+	CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("EnemyAOE"));
+
+
 }
 
 // Called when the game starts or when spawned
 void AAoeAttackController::BeginPlay()
 {
 	Super::BeginPlay();
-	AoeDecal->SetVisibility(true);
-	AoeLifeSpan = 2.f;
-	// Set timer until aoe attack is destroyed
-	GetWorld()->GetTimerManager().SetTimer(AoeTimerHandle, this, &AAoeAttackController::ActivateAoe, AoeLifeSpan, false);
+
+	// Store Player Character in the pointer
+	PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+	// AOE Activation Timer - CHANGE NEEDED (Need to make the time customisable for different types of attacks)
+	GetWorldTimerManager().SetTimer(AOEActivateTimer, this, &AAoeAttackController::ActivateAOE, 2.4f, false);
+
 }
 
-void AAoeAttackController::ActivateAoe()
+
+void AAoeAttackController::FireAtLocation(const FVector& SpawnLoaction, const float& AoeSize)
 {
-	if(AoeCollisionSphere->IsOverlappingActor(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)))
-	{
-		UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->TakeDamage(1.f, FDamageEvent(), nullptr, nullptr);
-	}
-	Destroy();
+	// Sets velocity vector to be the direction multipled by the initial speed of the projectile
+
+	// SpawnLocation = AOE Spawn Location, to make AOE spawn on ground, spawn at ActorLocation - 90
+	CollisionComponent->SetSphereRadius(AoeSize * 50);
+
+	ProjectileMovementComponent->Velocity = SpawnLoaction * ProjectileMovementComponent->InitialSpeed;
 }
 
+void AAoeAttackController::GetTarget()
+{
 
+}
+
+void AAoeAttackController::ActivateAOE()
+{
+	if (CollisionComponent->IsOverlappingActor(PlayerCharacter))
+	{
+		PlayerCharacter->TakeDamage(10.f, FDamageEvent(), nullptr, this);
+	}
+}
 
 
