@@ -4,10 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "ParticleDefinitions.h"
+#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
+#include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Kismet/GameplayStatics.h"
+#include "HealthComponent.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS(Blueprintable)
@@ -22,11 +26,14 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	
+
+	// AOE attack spawn class (Vector)
+	UPROPERTY(EditDefaultsOnly, Category = "AOE")
+		TSubclassOf<class AAoeAttackController> AOEAttackClass;
+
 	// AOE attack spawn class (Vector)
 	UPROPERTY(EditDefaultsOnly, Category = "PlayerProjectiles")
-	TSubclassOf<class AProjectiles> SpellClass;
-
+		TSubclassOf<class AProjectiles> ProjectileClass;
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -36,160 +43,133 @@ public:
 
 	/* --------- Movement Inputs ---------- */
 
-	// Forward and Backward Movement
-	UFUNCTION() 
-	void MoveForwardMethod(float Value);
-
-	// Right and Left Movement
-	UFUNCTION() 
-	void MoveRightMethod(float Value);
-	
-	UFUNCTION()
-	void TurnAtRateMethod(float Value);
-	
-	UFUNCTION()
-	void LookUpRateMethod(float Value);
+	UFUNCTION() // Forward and Backward Movement
+		void MoveForwardMethod(float value);
+	UFUNCTION() // Right and Left Movement
+		void MoveRightMethod(float value);
+	UFUNCTION(BlueprintCallable)
+		void TurnAtRateMethod(float value);
+	UFUNCTION(BlueprintCallable)
+		void LookUpRateMethod(float value);
 
 	/* --------- Dash Functions ---------- */
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
-	bool ImprovedDashFunction();
+		bool ImprovedDashFunction(float DeltaTime);
 	
-	void DashCooldownFunction();
+	void DashCooldown();
 	
-	/* --------- Switch Perspective ---------- */
+	/* --------- Switch Perspecctive ---------- */
 	UFUNCTION(BlueprintCallable, Category = "Perspective")
-	void SwitchPerspectiveMethod(float value);
+		void SwitchPerspectiveMethod(float value);
 
 
-	/* ------ Player Melee Combat ------ */
-	UFUNCTION()
-	void MeleeAttack();
-
-	void MeleeAttackCooldown();
-	
 	/* --------- Player Projectile Casting ---------- */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void CastProjectileMethod();
+		void CastProjectileMethod();
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void CastProjectile();
-	
-	void ResetProjectile();
+	void ResetProjecitle();
 
 	void RotatePlayerToCursor();
-	
+
+	UFUNCTION(BlueprintCallable, Category = "HealthFunc")
+	void ReducePlayerHealth();
+
+
 	bool GetCanDamage();
 	void SetCanDamage();
 
+	UFUNCTION()
+		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+		void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 protected:
 
-	// Projectile muzzle offset from the camera location
+	// Gun muzzle offset from the camera location
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	FVector MuzzleOffset;
+		FVector MuzzleOffset;
 
-	float TurnRate;
-	float LookRate;
-	bool bIsDashing;
-	bool perftest;
-	// Camera Tracker Object
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UStaticMeshComponent* CameraTracker;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-    USceneComponent* Root;
-	/* ------ Player Melee Attack ------ */
-	float MeleeCooldownTimer;
-	FTimerHandle MeleeTimerHandle;
+	float m_Turn_Rate;
+	float m_Look_Rate;
+	bool is_Dashing;
+	bool can_Dash;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
-	bool bIsAttack;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
-	bool bCanDamage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
-	bool bCanAttack;
+	bool can_Cast;
 
-	
-	/* ------- Player Spell Cast Attack ------ */
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
-	bool bIsSpellCast;
-
+	// Timer handle for handling dash function
+	FTimerHandle DashTimerHandle;
 	// Timer handle to handle projectile cooldown
-	FTimerHandle CastTimerHandle;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spell Cast")
-	bool bCanCast;
+	FTimerHandle ProjectileTimerHandle;
 
-	/* ------ Player Dash ------ */
 
-	// Can the player currently dash (are they already currently dashing)
-	bool bCanDash;
-	
-	// Dash Timer
+	// Dash Variables
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FTimerHandle DashTimer;
-	
-	// How far the player will dash
+	FTimerHandle t_Dash_Function;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DashDistance;
-
-	// How fast the player will dash
+	float m_Dash_Distance;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DashSpeed;
-
-	// How often the player can dash
+	float m_Dash_Speed;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DashCooldown;
+	float m_Dash_Cooldown;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector m_Base_Location;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector m_Predicted_Location;
+	
+	//Spring Arm Component for controlling the camera
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		USpringArmComponent* CameraBoom;
+
+	//Camera Component
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+		UCameraComponent* Camera;
+
+
+	// Health
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_Player_Health_Points = 1.f;
+	float m_Max_Health = 1.f;
+
+	// Health Component
+	
+	
+	// Energy
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_Player_Energy_Points = 1.f;
+	float m_Max_Energy = 1.f;
+
+	// Experience
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float m_Player_Experience_Points = 0.f;
+	float m_Max_Experience = 1.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FTimerHandle DashCooldownTimer;
-	
-	// Stores the players initial position
+		FRotator m_Cam_Rotate;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector BaseLocation;
+		bool m_Can_Move = true;
 
-	// Stores the players predicted position for after the dash is complete
+	//Perspective
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector PredictedLocation;
-	
+		float m_Rotation_Angle = 0.f;
 
-
-
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool bCanMove = true;
-	
-	/* ------ Player Camera ------ */
+		float m_Target_Angle = 45.f;
 
-	// Spring Arm Component for controlling the camera
-	UPROPERTY(EditAnywhere, BlueprintReadWrite) 		
-	USpringArmComponent* CameraBoom;
-	
-	// Camera Component
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly) 	
-	UCameraComponent* Camera;
-
-	// Camera Rotator
-	UPROPERTY(EditAnywhere, BlueprintReadWrite) 		
-	FRotator CameraRotate;
-
-	// Current Camera Angle
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)			
-	float RotationAngle = 0.f;
-
-	// Target Angle
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)			
-	float TargetAngle = 45.f;
-	
-	// Camera Rotation Speed
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)			
-	float RotationSpeed = 200.f;
-
-	float CameraZoomValue;
-	/* ------- Box Push ------- */
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float MoveDirection = 0.f;
+		float m_Rotation_Speed = 200.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float moveDir = 0.f;
+
+	// Animation Blueprint Variables
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
+	bool is_Attack;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
+	bool can_Damage;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
+	bool is_Spellcast;
+	float m_Camera_Zoom_Value;
 };
