@@ -153,11 +153,8 @@ void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming,
 	ProjectileMovementComponent->Velocity = ShootDirection * ProjectileMovementComponent->InitialSpeed;
 
 	// Once projectile is fired, check to see if projectile was set to homing
-<<<<<<< Updated upstream
 	UGameplayStatics::SpawnEmitterAttached(ProjectileParticleEffect, RootComponent);
-=======
 
->>>>>>> Stashed changes
 }
 
 
