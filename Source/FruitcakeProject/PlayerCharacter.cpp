@@ -334,7 +334,7 @@ void APlayerCharacter::CastProjectileMethod()
 				const FVector LaunchDirection = ProjectileLaunchDirection.Vector();
 				Projectile->FireInDirection(LaunchDirection, false, true);
 				bCanCast = false;
-				GetWorldTimerManager().SetTimer(CastTimerHandle, this, &APlayerCharacter::ResetProjectile, 1.f, false);
+				GetWorldTimerManager().SetTimer(CastTimerHandle, this, &APlayerCharacter::ResetProjectile, .1f, false);
 			}
 
 		}
