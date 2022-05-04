@@ -14,7 +14,7 @@ AFlowerEnemy::AFlowerEnemy()
 
 	if (!CollisionComponent)
 	{
-		// Set Collsion box to be sphere.
+		// Set Collision box to be sphere.
 		CollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 		// Set collision box radius.
 		CollisionComponent->SetBoxExtent(FVector(90.f, 90.f, 90.f));
@@ -23,30 +23,10 @@ AFlowerEnemy::AFlowerEnemy()
 
 		RootComponent = CollisionComponent;
 	}
-
-	// mesh component set up
-	if (!FlowerEnemyMeshComponent)
-	{
-		// sets mesh of projectile to basic sphere mesh, loaded from unreal engine files
-		FlowerEnemyMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProjectileMeshComponent"));
-		static ConstructorHelpers::FObjectFinder<UStaticMesh>Mesh(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube'"));
-		if (Mesh.Succeeded())
-		{
-			FlowerEnemyMeshComponent->SetStaticMesh(Mesh.Object);
-		}
-		FlowerEnemyMeshComponent->SetWorldLocation(FVector(0, 0, 0));
-		FlowerEnemyMeshComponent->SetWorldScale3D(FVector(1.3f, 1.3f, 1.3f));
-		// set how long projectile will last in seconds, after this amount of time, projectile is destroyed
-		InitialLifeSpan = 3.f;
-	}
-	FlowerEnemyMeshComponent->SetupAttachment(RootComponent);
-	FlowerEnemyMeshComponent->SetCollisionProfileName(TEXT("Enemy"));
-
+	
 	CollisionComponent->SetCollisionProfileName(TEXT("Enemy"));
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AFlowerEnemy::OnOverlapBegin);
 	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AFlowerEnemy::OnOverlapEnd);
-
-
 }
 
 // Called when the game starts or when spawned
@@ -54,33 +34,61 @@ void AFlowerEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//EnergySphereCollision->OnComponentBeginOverlap.AddDynamic(this, &AEnergyOrbs::OnOverlapBegin);
-	//EnergySphereCollision->OnComponentEndOverlap.AddDynamic(this, &AEnergyOrbs::OnOverlapEnd);
-
 	PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	FlowerProjectiles = AProjectiles::StaticClass();
-	FlowerAoeAttacks = AAoeAttackController::StaticClass();
 
-	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &AFlowerEnemy::FireAtPlayer, 3.f, true, 0.5f);
+	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &AFlowerEnemy::CallFireAtPlayer, 4.f, true, 0.5f);
 }
 
 // Called every frame
 void AFlowerEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	// Rotate the enemy to face the player.
+	FVector Direction = PlayerCharacter->GetActorLocation() - GetActorLocation();
+	FRotator NewRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
+	NewRotation.Pitch = 0.f;
+	NewRotation.Roll = 0.f;
+	SetActorRotation(NewRotation);
+
+	
+	
 }
+
+void AFlowerEnemy::CallFireAtPlayer()
+{
+	// Raycast to see if player is in sight
+	FHitResult HitResult;
+	FVector Start = GetActorLocation();
+	FVector End = Start + (GetActorForwardVector() * 3000.f);
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.AddIgnoredActor(this);
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollisionParams);
+
+	if(!bHit)
+	{
+		return;
+	}
+
+	if(HitResult.GetActor()->IsA(APlayerCharacter::StaticClass()) == false)
+	{
+		return;
+	}
+	
+	bIsShooting = true;
+}
+
 
 void AFlowerEnemy::FireAtPlayer()
 {
-
 	if (FlowerProjectiles)
 	{
-		FVector SpawnLocation;
 		FRotator CameraRotation;
 		//	GetActorEyesViewPoint(CameraLocation, CameraRotation);
 
 
-		SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z);
+		FVector SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z);
 		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
 		MuzzleOffset.Set(100.0f, 40.0f, 0.0f);
 
@@ -107,38 +115,6 @@ void AFlowerEnemy::FireAtPlayer()
 				FVector LaunchDirection = MuzzleRotation.Vector();
 				Projectile->FireInDirection(LaunchDirection, true, false);
 			}
-		}
-	}
-}
-
-void AFlowerEnemy::FireAoeAtPlayer()
-{
-	if (FlowerAoeAttacks)
-	{
-		FVector SpawnLocation;
-		FRotator CameraRotation;
-		SpawnLocation = FVector(PlayerCharacter->GetActorLocation().X, PlayerCharacter->GetActorLocation().Y, PlayerCharacter->GetActorLocation().Z - 90.f);
-
-		// set rotation of projectile to camera rotation
-		FRotator MuzzleRotation = CameraRotation;
-
-		UWorld* World = GetWorld();
-		if (World)
-		{
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.Owner = this;
-			SpawnParams.Instigator = GetInstigator();
-
-			// Spawn the projectile at the muzzle.
-			AAoeAttackController* Projectile = World->SpawnActor<AAoeAttackController>(FlowerAoeAttacks, SpawnLocation, FRotator(0.f, 0.f, 0.f), SpawnParams);
-
-			if (Projectile)
-			{
-				// Set the projectile's initial trajectory.
-				FVector LaunchDirection = MuzzleRotation.Vector();
-				Projectile->FireAtLocation(LaunchDirection, 3.f);
-			}
-
 		}
 	}
 }

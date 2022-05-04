@@ -49,6 +49,10 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = "FlowerEnemy")
 		UStaticMeshComponent* FlowerEnemyMeshComponent;
 
+	// Sphere collision component.
+	UPROPERTY(VisibleDefaultsOnly, Category = "FlowerEnemy")
+	UBoxComponent* ProjectileSpawnPoint;
+
 	// Flower projectiles spawn class (Vector)
 	UPROPERTY(EditDefaultsOnly, Category = "FlowerEnemy")
 		TSubclassOf<class AProjectiles> FlowerProjectiles;
