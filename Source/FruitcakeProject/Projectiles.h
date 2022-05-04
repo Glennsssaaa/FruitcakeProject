@@ -6,7 +6,6 @@
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "Particles/ParticleSystem.h"
 #include "Components/PointLightComponent.h"
 #include "Projectiles.generated.h"
 
@@ -31,10 +30,10 @@ public:
 	void FireInDirection(const FVector& ShootDirection, bool isHoming, bool isPlayer);
 
 	// called after initial function if bullet is set to homing, controls homing
-	void HomingOnTarget();
+	void HomingOnTarget() const;
 
 	// gets projectiles target if is set to homing
-	void GetTarget();
+	static void GetTarget();
 
 	// Function that is called when the projectile hits something.
 	UFUNCTION()
@@ -46,6 +45,7 @@ public:
 protected:
 	FTimerHandle ProjectileTimerHandle;
 
+	UPROPERTY()
 	class APlayerCharacter* PlayerCharacter;
 
 	// Sphere Static Mesh
@@ -76,7 +76,4 @@ protected:
 		UPointLightComponent* PointLightComponent;
 
 	bool isPlayerProjectile;
-
-	// temporary, will be deleted
-	float temptime;
 };

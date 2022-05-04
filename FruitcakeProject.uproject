@@ -9,8 +9,7 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
-				"Engine",
-				"Niagara"
+				"Engine"
 			]
 		}
 	],
@@ -36,7 +35,7 @@
 			"Enabled": true
 		},
 		{
-			"Name": "CascadeToNiagaraConverter",
+			"Name": "ApexDestruction",
 			"Enabled": true
 		}
 	]
