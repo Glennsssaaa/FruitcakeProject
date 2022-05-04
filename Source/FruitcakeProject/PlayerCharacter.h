@@ -153,7 +153,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector PredictedLocation;
 	
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector ProjectileSpawnPoint;
 
 
 	

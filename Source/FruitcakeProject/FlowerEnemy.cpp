@@ -26,6 +26,8 @@ AFlowerEnemy::AFlowerEnemy()
 
 
 
+
+
 	CollisionComponent->SetCollisionProfileName(TEXT("Enemy"));
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AFlowerEnemy::OnOverlapBegin);
 	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AFlowerEnemy::OnOverlapEnd);
@@ -68,7 +70,7 @@ void AFlowerEnemy::CallFireAtPlayer()
 	// Raycast to see if player is in sight
 	FHitResult HitResult;
 	FVector Start = GetActorLocation();
-	FVector End = Start + (GetActorForwardVector() * 1000.f);
+	FVector End = Start + (GetActorForwardVector() * 3000.f);
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.AddIgnoredActor(this);
 	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollisionParams);
