@@ -313,9 +313,6 @@ void APlayerCharacter::CastProjectileMethod()
 {
 	if (bCanCast)
 	{
-		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
-		MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
-
 		const FVector SpawnLocation = FVector(ProjectileSpawnPoint.X, ProjectileSpawnPoint.Y, ProjectileSpawnPoint.Z);
 
 		// set rotation of projectile to camera rotation
@@ -334,7 +331,7 @@ void APlayerCharacter::CastProjectileMethod()
 			if (Projectile)
 			{
 				// Set the projectile's initial trajectory.
-				const FVector LaunchDirection = MuzzleRotation.Vector();
+				const FVector LaunchDirection = ProjectileLaunchDirection.Vector();
 				Projectile->FireInDirection(LaunchDirection, false, true);
 				bCanCast = false;
 				GetWorldTimerManager().SetTimer(CastTimerHandle, this, &APlayerCharacter::ResetProjectile, 1.f, false);

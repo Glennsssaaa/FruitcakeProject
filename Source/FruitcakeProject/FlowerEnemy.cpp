@@ -23,25 +23,16 @@ AFlowerEnemy::AFlowerEnemy()
 
 		RootComponent = CollisionComponent;
 	}
-
-
-
-
-
+	
 	CollisionComponent->SetCollisionProfileName(TEXT("Enemy"));
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AFlowerEnemy::OnOverlapBegin);
 	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AFlowerEnemy::OnOverlapEnd);
-
-
 }
 
 // Called when the game starts or when spawned
 void AFlowerEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//EnergySphereCollision->OnComponentBeginOverlap.AddDynamic(this, &AEnergyOrbs::OnOverlapBegin);
-	//EnergySphereCollision->OnComponentEndOverlap.AddDynamic(this, &AEnergyOrbs::OnOverlapEnd);
 
 	PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	FlowerProjectiles = AProjectiles::StaticClass();
