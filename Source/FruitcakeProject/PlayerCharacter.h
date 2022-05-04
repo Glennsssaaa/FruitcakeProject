@@ -156,7 +156,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector ProjectileSpawnPoint;
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FRotator ProjectileLaunchDirection;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool bCanMove = true;
