@@ -127,6 +127,8 @@ void APlayerCharacter::BeginPlay()
 	CameraBoom->bEnableCameraLag = true;
 
 	perftest = true;
+
+	SpellClass = AProjectiles::StaticClass();
 }
 
 
