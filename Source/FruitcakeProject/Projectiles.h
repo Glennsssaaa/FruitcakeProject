@@ -28,11 +28,7 @@ public:
 
 	// initial firing function
 	UFUNCTION()
-<<<<<<< Updated upstream
 	void FireInDirection(const FVector& ShootDirection, bool isHoming, bool isPlayer);
-=======
-		void FireInDirection(const FVector& ShootDirection, bool isHoming, bool isPlayer);
->>>>>>> Stashed changes
 
 	// called after initial function if bullet is set to homing, controls homing
 	void HomingOnTarget() const;
