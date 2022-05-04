@@ -316,7 +316,7 @@ void APlayerCharacter::CastProjectileMethod()
 {
 	if (bCanCast)
 	{
-		const FVector SpawnLocation = FVector(ProjectileSpawnPoint.X, ProjectileSpawnPoint.Y, ProjectileSpawnPoint.Z);
+		const FVector SpawnLocation = FVector(ProjectileSpawnPoint.X, ProjectileSpawnPoint.Y, ProjectileSpawnPoint.Z + 100);
 
 		// set rotation of projectile to camera rotation
 		const FRotator MuzzleRotation = GetActorRotation();
