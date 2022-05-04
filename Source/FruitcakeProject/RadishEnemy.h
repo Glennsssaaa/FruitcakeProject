@@ -12,6 +12,8 @@
 
 #include "GameFramework/MovementComponent.h"
 
+#include "Components/WidgetComponent.h"
+
 #include "RadishEnemy.generated.h"
 
 UCLASS(Blueprintable)
@@ -131,5 +133,4 @@ protected:
 	// Attack Time Delay, editable in blueprint
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RadishEnemy")
 		float f_attack_delay_time;
-
 };
