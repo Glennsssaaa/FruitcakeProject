@@ -98,6 +98,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	SpellClass = AProjectiles::StaticClass();
 
 	// Set Character Rotation Rate (How fast the player rotates to the direction they are moving)
 	GetCharacterMovement()->RotationRate = FRotator(2160.f, 2160.f, 2160.f);
