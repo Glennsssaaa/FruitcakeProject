@@ -88,7 +88,7 @@ void AFlowerEnemy::FireAtPlayer()
 		//	GetActorEyesViewPoint(CameraLocation, CameraRotation);
 
 
-		FVector SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z);
+		FVector SpawnLocation = FVector(ProjectileSpawnPoint.X, ProjectileSpawnPoint.Y, ProjectileSpawnPoint.Z);
 		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
 		MuzzleOffset.Set(100.0f, 40.0f, 0.0f);
 
