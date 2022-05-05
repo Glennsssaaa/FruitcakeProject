@@ -139,6 +139,8 @@ void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming,
 	}
 	else
 	{
+		ProjectileMovementComponent->InitialSpeed = 2500.0f;
+		ProjectileMovementComponent->MaxSpeed = 2500.0f;
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("PlayerAttack"));
 		ProjectileMeshComponent->BodyInstance.SetCollisionProfileName(TEXT("PlayerAttack"));
 		//Set VFX Colour to cyan
