@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "ParticleDefinitions.h"
 #include "Camera/CameraComponent.h"
+#include "Components/BoxComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "PlayerCharacter.generated.h"
@@ -74,6 +75,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void CastProjectile();
+
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	bool CheckIfButtonIsBehindWall(UBoxComponent* box);
+
 	
 	void ResetProjectile();
 
@@ -108,6 +114,7 @@ protected:
 	bool bCanDamage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
 	bool bCanAttack;
+	
 
 	
 	/* ------- Player Spell Cast Attack ------ */
@@ -120,6 +127,9 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spell Cast")
 	bool bCanCast;
+
+
+	
 
 	/* ------ Player Dash ------ */
 
