@@ -2,6 +2,8 @@
 
 
 #include "PlayerCharacter.h"
+
+#include "DrawDebugHelpers.h"
 #include "Math/UnrealMathUtility.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Math/Vector2D.h" 
@@ -98,6 +100,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	SpellClass = AProjectiles::StaticClass();
 
 	// Set Character Rotation Rate (How fast the player rotates to the direction they are moving)
 	GetCharacterMovement()->RotationRate = FRotator(2160.f, 2160.f, 2160.f);
@@ -126,6 +129,8 @@ void APlayerCharacter::BeginPlay()
 	CameraBoom->bEnableCameraLag = true;
 
 	perftest = true;
+
+	SpellClass = AProjectiles::StaticClass();
 }
 
 
@@ -137,6 +142,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	
 	if (!UKismetMathLibrary::NearlyEqual_FloatFloat(RotationAngle, TargetAngle, 100.f * DeltaTime))
     {
+		CameraBoom->bEnableCameraLag = false;
         float Rotation_Step = RotationSpeed * DeltaTime;
         if (TargetAngle < RotationAngle)
         {
@@ -152,6 +158,7 @@ void APlayerCharacter::Tick(float DeltaTime)
     }
     else
     {
+    	CameraBoom->bEnableCameraLag = true;
         RotationAngle = TargetAngle;
     }
 
@@ -286,13 +293,13 @@ void APlayerCharacter::MeleeAttack()
 	bIsAttack = true;
 
 	// Set amount of time before player can perform another melee attack
-	MeleeCooldownTimer = 0.1f;
+	MeleeCooldownTimer = 0.5f;
 
 	// Get Forward Vector
 	const FRotator Rotation = GetActorRotation();
 	const FRotator Yaw(0, Rotation.Yaw, 0);
 	const FVector Direction = FRotationMatrix(Yaw).GetUnitAxis(EAxis::X);
-
+	
 	// Launch Player Forward
 	LaunchCharacter(Direction * 500, false, false);
 
@@ -302,19 +309,17 @@ void APlayerCharacter::MeleeAttack()
 
 void APlayerCharacter::MeleeAttackCooldown()
 {
-	bCanAttack = true;
+//	bCanAttack = true;
 	bCanMove = true;
 	bCanDamage = true;
+	bIsAttack = false;
 }
 
 void APlayerCharacter::CastProjectileMethod()
 {
 	if (bCanCast)
 	{
-		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
-		MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
-
-		const FVector SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z + 50);
+		const FVector SpawnLocation = FVector(ProjectileSpawnPoint.X, ProjectileSpawnPoint.Y, ProjectileSpawnPoint.Z);
 
 		// set rotation of projectile to camera rotation
 		const FRotator MuzzleRotation = GetActorRotation();
@@ -332,10 +337,10 @@ void APlayerCharacter::CastProjectileMethod()
 			if (Projectile)
 			{
 				// Set the projectile's initial trajectory.
-				const FVector LaunchDirection = MuzzleRotation.Vector();
+				const FVector LaunchDirection = ProjectileLaunchDirection.Vector();
 				Projectile->FireInDirection(LaunchDirection, false, true);
 				bCanCast = false;
-				GetWorldTimerManager().SetTimer(CastTimerHandle, this, &APlayerCharacter::ResetProjectile, .2f, false);
+				GetWorldTimerManager().SetTimer(CastTimerHandle, this, &APlayerCharacter::ResetProjectile, 1.f, false);
 			}
 
 		}
@@ -350,6 +355,40 @@ void APlayerCharacter::CastProjectile()
 	}
 
 	
+}
+
+bool APlayerCharacter::CheckIfButtonIsBehindWall(UBoxComponent* box)
+{
+	// Line trace to box
+	
+	
+	
+	FHitResult Hit;
+	FVector Start = GetActorLocation();
+	FVector End = box->GetComponentLocation();
+	FVector End2 = FVector(End.X - 100, End.Y - 100, End.Z + 100);
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.AddIgnoredActor(this);
+	if(GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, CollisionParams))
+	{
+		DrawDebugLine(GetWorld(), GetActorLocation(), box->GetComponentLocation(), FColor::Red, false, 1.0f, 0, 1.0f);
+		// If the line trace hit something, return true
+		if(Hit.GetComponent()->ComponentHasTag(FName(TEXT("Button"))))
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("xtra good"));
+			return false;
+		}
+
+		if (Hit.bBlockingHit)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("bad"));
+			return true;
+		}
+	}
+	// Draw debug lines
+	DrawDebugLine(GetWorld(), GetActorLocation(), box->GetComponentLocation(), FColor::Red, false, 1.0f, 0, 1.0f);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("good"));
+	return false;
 }
 
 void APlayerCharacter::ResetProjectile()

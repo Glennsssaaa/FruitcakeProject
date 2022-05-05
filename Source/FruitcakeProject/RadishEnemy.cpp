@@ -81,7 +81,7 @@ void ARadishEnemy::Tick(float DeltaTime)
 	if(bJustDamaged)
 	{
 		// Go backwards
-		AddMovementInput(GetActorForwardVector() * (-MovementSpeed * DeltaTime));
+		AddMovementInput(GetActorForwardVector() * ((-MovementSpeed * 0.65f)* DeltaTime));
 	}
 	else if (bHostile && !bAttack)
 	{
@@ -120,10 +120,12 @@ void ARadishEnemy::Tick(float DeltaTime)
 		if (HitResult.GetActor()->IsA(APlayerCharacter::StaticClass()))
 		{
 			bHostile = true;
+			// print string
 		}
 		else
 		{
 			bHostile = false;
+
 		}
 	}
 	

@@ -27,6 +27,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// initial firing function
+	UFUNCTION()
 	void FireInDirection(const FVector& ShootDirection, bool isHoming, bool isPlayer);
 
 	// called after initial function if bullet is set to homing, controls homing
@@ -54,10 +55,10 @@ protected:
 
 	// Projectile materials
 	UPROPERTY(VisibleDefaultsOnly, Category = Movement)
-		UMaterialInstanceDynamic* ProjectileMaterialInstance;
+		UMaterialInstanceDynamic* ProjectileMaterialInstancePlayer;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = Movement)
-		UMaterialInstance* ProjectileMaterialInstanceEnemy;
+		UMaterialInstanceDynamic* ProjectileMaterialInstanceEnemy;
 
 	// Sphere collision component.
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)

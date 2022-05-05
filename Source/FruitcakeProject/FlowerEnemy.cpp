@@ -23,23 +23,16 @@ AFlowerEnemy::AFlowerEnemy()
 
 		RootComponent = CollisionComponent;
 	}
-
-
-
+	
 	CollisionComponent->SetCollisionProfileName(TEXT("Enemy"));
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AFlowerEnemy::OnOverlapBegin);
 	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AFlowerEnemy::OnOverlapEnd);
-
-
 }
 
 // Called when the game starts or when spawned
 void AFlowerEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//EnergySphereCollision->OnComponentBeginOverlap.AddDynamic(this, &AEnergyOrbs::OnOverlapBegin);
-	//EnergySphereCollision->OnComponentEndOverlap.AddDynamic(this, &AEnergyOrbs::OnOverlapEnd);
 
 	PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	FlowerProjectiles = AProjectiles::StaticClass();
@@ -68,7 +61,7 @@ void AFlowerEnemy::CallFireAtPlayer()
 	// Raycast to see if player is in sight
 	FHitResult HitResult;
 	FVector Start = GetActorLocation();
-	FVector End = Start + (GetActorForwardVector() * 1000.f);
+	FVector End = Start + (GetActorForwardVector() * 3000.f);
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.AddIgnoredActor(this);
 	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, CollisionParams);
@@ -95,7 +88,7 @@ void AFlowerEnemy::FireAtPlayer()
 		//	GetActorEyesViewPoint(CameraLocation, CameraRotation);
 
 
-		FVector SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z);
+		FVector SpawnLocation = FVector(ProjectileSpawnPoint.X, ProjectileSpawnPoint.Y, ProjectileSpawnPoint.Z);
 		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
 		MuzzleOffset.Set(100.0f, 40.0f, 0.0f);
 

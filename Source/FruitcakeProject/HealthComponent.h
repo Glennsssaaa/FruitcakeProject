@@ -24,7 +24,7 @@ protected:
 	float DefaultHealth;
 
 	UPROPERTY(BlueprintReadWrite)
-	float Health;
+	float health;
 
 	UFUNCTION()
 	void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamagedCauser);	

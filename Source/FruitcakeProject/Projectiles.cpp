@@ -3,6 +3,7 @@
 #include "PlayerCharacter.h"
 #include "Particles/ParticleSystem.h"
 #include "FlowerEnemy.h"
+#include "Particles/ParticleSystemComponent.h"
 
 
 // Sets default values
@@ -12,13 +13,17 @@ AProjectiles::AProjectiles()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Load material for projectile from unreal files
-
-	//Causing error message on startup
-	/*static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("Material'/Game/Fruitcake_Game/Materials/Material_GuideLaser.Material_GuideLaser'"));
-	if (Material.Succeeded())
+	static ConstructorHelpers::FObjectFinder<UMaterial>Material1(TEXT("Material'/Game/Fruitcake_Game/Materials/M_GuideLaser.M_GuideLaser'"));
+	if (Material1.Succeeded())
 	{
-		ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
-	}*/
+		ProjectileMaterialInstancePlayer = UMaterialInstanceDynamic::Create(Material1.Object, ProjectileMeshComponent);
+	}
+
+	static ConstructorHelpers::FObjectFinder<UMaterial>Material2(TEXT("Material'/Game/Fruitcake_Game/Materials/M_EnemyProjectile.M_EnemyProjectile'"));
+	if (Material2.Succeeded())
+	{
+		ProjectileMaterialInstanceEnemy = UMaterialInstanceDynamic::Create(Material2.Object, ProjectileMeshComponent);
+	}
 	
 	// collision component set up
 	if (!CollisionComponent)
@@ -45,17 +50,15 @@ AProjectiles::AProjectiles()
 		if (Mesh.Succeeded())
 		{
 			ProjectileMeshComponent->SetStaticMesh(Mesh.Object);
-			ProjectileMeshComponent->SetWorldScale3D(FVector(2.f, 2.f, 2.f));
+			ProjectileMeshComponent->SetWorldScale3D(FVector(0.25f, 0.25f, 0.25f));
 		}
 		// set how long projectile will last in seconds, after this amount of time, projectile is destroyed
 		InitialLifeSpan = 3.f;
 	}
 
-
-	ProjectileMeshComponent->SetMaterial(0, ProjectileMaterialInstance);
 	ProjectileMeshComponent->BodyInstance.SetCollisionProfileName(TEXT("EnemyProjectile"));
 
-	ProjectileMeshComponent->SetRelativeScale3D(FVector(0.1f, 0.1f, 0.1f));
+	//ProjectileMeshComponent->SetRelativeScale3D(FVector(0.1f, 0.1f, 0.1f));
 	ProjectileMeshComponent->SetupAttachment(RootComponent);
 	
 	// projectile movement component set up
@@ -97,7 +100,6 @@ AProjectiles::AProjectiles()
 	{
 		PointLightComponent = CreateDefaultSubobject<UPointLightComponent>(TEXT("PointLight"));
 		PointLightComponent->SetupAttachment(RootComponent);
-		PointLightComponent->SetLightColor(FLinearColor(0.f, 0.5f, 1.f, 1.f));
 	}
 
 }
@@ -105,6 +107,7 @@ AProjectiles::AProjectiles()
 // Called when the game starts or when spawned
 void AProjectiles::BeginPlay()
 {
+	InitialLifeSpan = 1.5f;
 	Super::BeginPlay();
 
 	PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
@@ -118,6 +121,7 @@ void AProjectiles::Tick(float DeltaTime)
 
 void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming, bool isPlayer)
 {
+	UParticleSystemComponent* Particle = UGameplayStatics::SpawnEmitterAttached(ProjectileParticleEffect, RootComponent);
 	// sets if projectile is coming from the player or not, used in collision checks
 	isPlayerProjectile = isPlayer;
 	if (!isPlayer)
@@ -126,13 +130,23 @@ void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming,
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("EnemyProjectile"));
 		ProjectileMovementComponent->bIsHomingProjectile = true;
 		ProjectileMovementComponent->HomingTargetComponent = PlayerCharacter->GetRootComponent();
+		//Set VFX Colour to magenta
+		ProjectileMeshComponent->SetMaterial(0, ProjectileMaterialInstanceEnemy);
+		PointLightComponent->SetLightColor(FLinearColor(1.f, 0.f, 1.f, 1.f));
+		Particle->SetColorParameter(FName("ParticleColor"), FLinearColor(1, 0, 1));
 		// if set to homing, wait half a second before targeting enemy
 		GetWorldTimerManager().SetTimer(ProjectileTimerHandle, this, &AProjectiles::HomingOnTarget, .5f, false);
 	}
 	else
 	{
+		ProjectileMovementComponent->InitialSpeed = 2500.0f;
+		ProjectileMovementComponent->MaxSpeed = 2500.0f;
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("PlayerAttack"));
 		ProjectileMeshComponent->BodyInstance.SetCollisionProfileName(TEXT("PlayerAttack"));
+		//Set VFX Colour to cyan
+		ProjectileMeshComponent->SetMaterial(0, ProjectileMaterialInstancePlayer);
+		PointLightComponent->SetLightColor(FLinearColor(0.f, 1.f, 1.f, 1.f));
+		Particle->SetColorParameter(FName("ParticleColor"), FLinearColor(0, 1, 1));
 	}
 
 	
@@ -141,9 +155,6 @@ void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming,
 	ProjectileMovementComponent->Velocity = ShootDirection * ProjectileMovementComponent->InitialSpeed;
 
 	// Once projectile is fired, check to see if projectile was set to homing
-
-
-
 	UGameplayStatics::SpawnEmitterAttached(ProjectileParticleEffect, RootComponent);
 
 }

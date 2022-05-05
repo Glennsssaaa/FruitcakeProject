@@ -50,13 +50,17 @@ protected:
 	
 	// Sphere collision component.
 	UPROPERTY(VisibleDefaultsOnly, Category = "FlowerEnemy")
-		UBoxComponent* CollisionComponent;
+	UBoxComponent* CollisionComponent;
+
+	// Sphere collision component.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FlowerEnemy")
+	FVector ProjectileSpawnPoint;
 
 	// Flower projectiles spawn class (Vector)
 	UPROPERTY(EditDefaultsOnly, Category = "FlowerEnemy")
-		TSubclassOf<class AProjectiles> FlowerProjectiles;
+	TSubclassOf<class AProjectiles> FlowerProjectiles;
 
 	// Gun muzzle offset from the camera location
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FlowerEnemy")
-		FVector MuzzleOffset;
+	FVector MuzzleOffset;
 };
