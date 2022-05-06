@@ -1,8 +1,13 @@
 #include "RadishEnemy.h"
 #include "PlayerCharacter.h"
 #include "Projectiles.h"
+#include "AIController.h" 
 #include "Kismet/GameplayStatics.h"
 #include "AoeAttackController.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/PawnSensingComponent.h"
+
+
 
 // Sets default values
 ARadishEnemy::ARadishEnemy()
@@ -49,19 +54,42 @@ ARadishEnemy::ARadishEnemy()
 	}
 	AttackRange->SetCollisionProfileName(TEXT("EnemyAOE"));
 	AttackRange->OnComponentBeginOverlap.AddDynamic(this, &ARadishEnemy::OnAttackRangeOverlapBegin);
+
+	// Pawn Sensing Comp Set Up
+	if(!PawnSensingComp)
+	{
+		PawnSensingComp = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PawnSensingComponent"));
+		PawnSensingComp->SetPeripheralVisionAngle(270.f);
+		PawnSensingComp->SightRadius = 1000.f;
+		PawnSensingComp->HearingThreshold = 600.f;
+		PawnSensingComp->LOSHearingThreshold = 600.f;
+		PawnSensingComp->SensingInterval = 0.25f;
+		PawnSensingComp->SetPeripheralVisionAngle(90.f);
+		PawnSensingComp->SetSensingUpdatesEnabled(true);
+		PawnSensingComp->OnSeePawn.AddDynamic(this, &ARadishEnemy::OnSeePlayer);
+	}
+
+	// AI Controller Set Up
+	if (!AIController)
+	{
+		AIController = CreateDefaultSubobject<AAIController>(TEXT("AIController"));
+		AIController->SetPerceptionComponent(PawnSensingComp);
+	}
+
+	
 }
 
 // Called when the game starts or when spawned
 void ARadishEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	// Initialise hostile, stunned and attack bool
 	bHostile = false;
 	bStunned = false;
 	bAttack = false;
 	bAttackDelayActive = false;
-	MovementSpeed = 20.f;
+//	MovementSpeed = 20.f;
 	AttackRange->SetSphereRadius(300.f);
 	Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 	bJustDamaged = false;
@@ -88,20 +116,21 @@ void ARadishEnemy::Tick(float DeltaTime)
 	// If enemy is hostile, move towards player
 	FVector Direction = Player->GetActorLocation() - GetActorLocation();
 	// if enemy too close to player, stop moving
+	
+	// if (Direction.Size() > 100)
+	// {
+	// 	Direction.Normalize();
+	// 	AddMovementInput(Direction, MovementSpeed * DeltaTime);
+	// }
 
-	if (Direction.Size() > 100)
+	//	AIController->MoveToActor(Player, 100.f);
+	}
+	else if (bStunned)
 	{
-		Direction.Normalize();
-		AddMovementInput(Direction, MovementSpeed * DeltaTime);
-	}
-
-
-	}
-	else if (bStunned) {
 		// If enemy is stunned, do nothing
 		FVector Direction = Player->GetActorLocation() + GetActorLocation();
-		Direction.Normalize();
-		AddMovementInput(Direction, MovementSpeed * DeltaTime);
+		// Direction.Normalize();
+		// AddMovementInput(Direction, MovementSpeed * DeltaTime);
 	}
 	else {
 		// If enemy is not hostile, do nothing
@@ -128,21 +157,18 @@ void ARadishEnemy::Tick(float DeltaTime)
 
 		}
 	}
-	
-	
 }
 
-void ARadishEnemy::UnbindDelegatesAndDestroy()
+void ARadishEnemy::OnSeePlayer(APawn* Pawn)
 {
-	// Unbind all delegates before destroying
-	CollisionComponent->OnComponentBeginOverlap.RemoveDynamic(this, &ARadishEnemy::OnOverlapBegin);
-	SightSphere->OnComponentBeginOverlap.RemoveDynamic(this, &ARadishEnemy::OnTriggerBegin);
-	SightSphere->OnComponentEndOverlap.RemoveDynamic(this, &ARadishEnemy::OnTriggerEnd);
-	AttackRange->OnComponentBeginOverlap.RemoveDynamic(this, &ARadishEnemy::OnAttackRangeOverlapBegin);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("i fucking see you"));
+	AIController->Possess(this);
+	// Use Ai controller to move to player
+	AIController->MoveToActor(Player, 100.f);
+	
+	bHostile = true;
 
-	Destroy();
 }
-
 
 void ARadishEnemy::RotateTowardsPlayer()
 {
@@ -241,7 +267,13 @@ void ARadishEnemy::SetAttackDelayBool()
 	bAttackDelayActive = false;
 }
 
-void ARadishEnemy::ReducePlayerHealth()
+void ARadishEnemy::UnbindDelegatesAndDestroy()
 {
-	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &ARadishEnemy::CheckIfStillOverlapping, 0.1f, false, AttackDelayTime);
+	// Unbind all delegates before destroying
+	CollisionComponent->OnComponentBeginOverlap.RemoveDynamic(this, &ARadishEnemy::OnOverlapBegin);
+	SightSphere->OnComponentBeginOverlap.RemoveDynamic(this, &ARadishEnemy::OnTriggerBegin);
+	SightSphere->OnComponentEndOverlap.RemoveDynamic(this, &ARadishEnemy::OnTriggerEnd);
+	AttackRange->OnComponentBeginOverlap.RemoveDynamic(this, &ARadishEnemy::OnAttackRangeOverlapBegin);
+
+	Destroy();
 }

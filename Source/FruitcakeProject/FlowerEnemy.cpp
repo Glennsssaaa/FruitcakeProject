@@ -123,13 +123,13 @@ void AFlowerEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 {
 	if (OtherComp->ComponentHasTag(FName("PlayerAttack")))
 	{
-		Destroy();
+		TakeDamage(1.f, FDamageEvent(), nullptr, this);
 	}
 
 	if (OtherComp->GetCollisionProfileName() == TEXT("PlayerAttack"))
 	{
 		OtherActor->Destroy();
-		Destroy();
+		TakeDamage(1.f, FDamageEvent(), nullptr, this);
 	}
 }
 

@@ -126,6 +126,8 @@ void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming,
 	isPlayerProjectile = isPlayer;
 	if (!isPlayer)
 	{
+		ProjectileMovementComponent->InitialSpeed = 750.0f;
+		ProjectileMovementComponent->MaxSpeed = 750.0f;
 		ProjectileMeshComponent->BodyInstance.SetCollisionProfileName(TEXT("EnemyProjectile"));
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("EnemyProjectile"));
 		ProjectileMovementComponent->bIsHomingProjectile = true;

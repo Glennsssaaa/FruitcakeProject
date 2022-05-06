@@ -353,20 +353,14 @@ void APlayerCharacter::CastProjectile()
 	{
 		return;
 	}
-
-	
 }
 
 bool APlayerCharacter::CheckIfButtonIsBehindWall(UBoxComponent* box)
 {
 	// Line trace to box
-	
-	
-	
 	FHitResult Hit;
 	FVector Start = GetActorLocation();
 	FVector End = box->GetComponentLocation();
-	FVector End2 = FVector(End.X - 100, End.Y - 100, End.Z + 100);
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.AddIgnoredActor(this);
 	if(GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, CollisionParams))
@@ -395,8 +389,6 @@ void APlayerCharacter::ResetProjectile()
 {
 	bCanCast = true;
 }
-
-
 
 
 void APlayerCharacter::RotatePlayerToCursor()

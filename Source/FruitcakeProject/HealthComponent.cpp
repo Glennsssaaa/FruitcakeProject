@@ -49,7 +49,7 @@ void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDam
 		health = 0;
 		return;
 	}
-
+	
 	// Otherwise apply damage as normal
 	health -= Damage;
 

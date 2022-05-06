@@ -14,7 +14,9 @@ class FRUITCAKEPROJECT_API ARadishEnemy : public APawn
 {
 	GENERATED_BODY()
 	
-public:	
+public:
+	UFUNCTION()
+	void OnSeePlayer(APawn* Pawn);
 	// Sets default values for this actor's properties
 	ARadishEnemy();
 
@@ -39,10 +41,7 @@ public:
 	// Attack Range Collision Functions
 	UFUNCTION()
 	void OnAttackRangeOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void ReducePlayerHealth();
-
+	
 	UFUNCTION()
 	void SetStunned();
 	
@@ -68,6 +67,19 @@ protected:
 	// Attack Range Collision Component
 	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
 	USphereComponent* AttackRange;
+
+	/* ------ AI Test ------ */
+	// Pawn Sensing Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RadishEnemy")
+	class UAIPerceptionComponent* PawnSensingComp;
+
+	// AI Perception Component
+	
+	
+	// AI Controller
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RadishEnemy")
+	class AAIController* AIController;
+	
 
 	// Sets if enemy is moving towards player or not
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "RadishEnemy")
