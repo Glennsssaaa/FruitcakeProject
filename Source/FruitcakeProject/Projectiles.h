@@ -7,6 +7,8 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/PointLightComponent.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Projectiles.generated.h"
 
 UCLASS()
@@ -68,9 +70,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 		UProjectileMovementComponent* ProjectileMovementComponent;
 
-	// Projectile Particle Emitter
 	UPROPERTY(VisibleAnywhere)
-		UParticleSystem* ProjectileParticleEffect;
+		UNiagaraSystem* ProjectileParticleEffectN;
+
+	UPROPERTY(VisibleAnywhere)
+		UNiagaraComponent* ParticleComponent;
 
 	//Point Light
 	UPROPERTY(VisibleAnywhere)
