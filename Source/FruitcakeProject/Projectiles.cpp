@@ -100,7 +100,11 @@ AProjectiles::AProjectiles()
 		PointLightComponent = CreateDefaultSubobject<UPointLightComponent>(TEXT("PointLight"));
 		PointLightComponent->SetupAttachment(RootComponent);
 	}
+}
 
+void AProjectiles::Kill()
+{
+	ParticleComponent->Deactivate();
 }
 
 // Called when the game starts or when spawned
@@ -110,6 +114,8 @@ void AProjectiles::BeginPlay()
 	Super::BeginPlay();
 
 	PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+	GetWorldTimerManager().SetTimer(KillTimerHandle, this, &AProjectiles::Kill, 1.49f, false);
 }
 
 // Called every frame
