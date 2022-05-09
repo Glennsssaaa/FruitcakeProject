@@ -50,8 +50,8 @@ protected:
 		UStaticMeshComponent* FlowerEnemyMeshComponent;
 
 	// Sphere collision component.
-	UPROPERTY(VisibleDefaultsOnly, Category = "FlowerEnemy")
-	UBoxComponent* ProjectileSpawnPoint;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FlowerEnemy")
+	FVector ProjectileSpawnPoint;
 
 	// Flower projectiles spawn class (Vector)
 	UPROPERTY(EditDefaultsOnly, Category = "FlowerEnemy")

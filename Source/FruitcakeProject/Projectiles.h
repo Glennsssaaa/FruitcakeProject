@@ -6,8 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "Particles/ParticleSystem.h"
 #include "Components/PointLightComponent.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Projectiles.generated.h"
 
 UCLASS()
@@ -32,21 +33,26 @@ public:
 	void FireInDirection(const FVector& ShootDirection, bool isHoming, bool isPlayer);
 
 	// called after initial function if bullet is set to homing, controls homing
-	void HomingOnTarget();
+	void HomingOnTarget() const;
 
 	// gets projectiles target if is set to homing
-	void GetTarget();
+	static void GetTarget();
 
 	// Function that is called when the projectile hits something.
 	UFUNCTION()
 		void OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+		void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+
+	UFUNCTION()
+		void Kill();
 	
 protected:
 	FTimerHandle ProjectileTimerHandle;
+	FTimerHandle KillTimerHandle;
 
+	UPROPERTY()
 	class APlayerCharacter* PlayerCharacter;
 
 	// Sphere Static Mesh
@@ -68,16 +74,15 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 		UProjectileMovementComponent* ProjectileMovementComponent;
 
-	// Projectile Particle Emitter
 	UPROPERTY(VisibleAnywhere)
-		UParticleSystem* ProjectileParticleEffect;
+		UNiagaraSystem* ProjectileParticleEffectN;
+
+	UPROPERTY(VisibleAnywhere)
+		UNiagaraComponent* ParticleComponent;
 
 	//Point Light
 	UPROPERTY(VisibleAnywhere)
 		UPointLightComponent* PointLightComponent;
 
-	bool isPlayerProjectile;
-
-	// temporary, will be deleted
-	float temptime;
+	bool isPlayerProjectile; 
 };
