@@ -67,18 +67,18 @@ protected:
 	// Attack Range Collision Component
 	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
 	USphereComponent* AttackRange;
-
-	/* ------ AI Test ------ */
-	// Pawn Sensing Component
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RadishEnemy")
-	class UAIPerceptionComponent* PawnSensingComp;
-
-	// AI Perception Component
-	
-	
-	// AI Controller
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RadishEnemy")
-	class AAIController* AIController;
+	//
+	// /* ------ AI Test ------ */
+	// // Pawn Sensing Component
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RadishEnemy")
+	// class UAIPerceptionComponent* PawnSensingComp;
+	//
+	// // AI Perception Component
+	//
+	//
+	// // AI Controller
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RadishEnemy")
+	// class AAIController* AIController;
 	
 
 	// Sets if enemy is moving towards player or not

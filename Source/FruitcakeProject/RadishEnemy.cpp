@@ -56,25 +56,25 @@ ARadishEnemy::ARadishEnemy()
 	AttackRange->OnComponentBeginOverlap.AddDynamic(this, &ARadishEnemy::OnAttackRangeOverlapBegin);
 
 	// Pawn Sensing Comp Set Up
-	if(!PawnSensingComp)
-	{
-		PawnSensingComp = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PawnSensingComponent"));
-		PawnSensingComp->SetPeripheralVisionAngle(270.f);
-		PawnSensingComp->SightRadius = 1000.f;
-		PawnSensingComp->HearingThreshold = 600.f;
-		PawnSensingComp->LOSHearingThreshold = 600.f;
-		PawnSensingComp->SensingInterval = 0.25f;
-		PawnSensingComp->SetPeripheralVisionAngle(90.f);
-		PawnSensingComp->SetSensingUpdatesEnabled(true);
-		PawnSensingComp->OnSeePawn.AddDynamic(this, &ARadishEnemy::OnSeePlayer);
-	}
-
-	// AI Controller Set Up
-	if (!AIController)
-	{
-		AIController = CreateDefaultSubobject<AAIController>(TEXT("AIController"));
-		AIController->SetPerceptionComponent(PawnSensingComp);
-	}
+	// if(!PawnSensingComp)
+	// {
+	// 	PawnSensingComp = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PawnSensingComponent"));
+	// 	PawnSensingComp->SetPeripheralVisionAngle(270.f);
+	// 	PawnSensingComp->SightRadius = 1000.f;
+	// 	PawnSensingComp->HearingThreshold = 600.f;
+	// 	PawnSensingComp->LOSHearingThreshold = 600.f;
+	// 	PawnSensingComp->SensingInterval = 0.25f;
+	// 	PawnSensingComp->SetPeripheralVisionAngle(90.f);
+	// 	PawnSensingComp->SetSensingUpdatesEnabled(true);
+	// 	PawnSensingComp->OnSeePawn.AddDynamic(this, &ARadishEnemy::OnSeePlayer);
+	// }
+	//
+	// // AI Controller Set Up
+	// if (!AIController)
+	// {
+	// 	AIController = CreateDefaultSubobject<AAIController>(TEXT("AIController"));
+	// 	AIController->SetPerceptionComponent(PawnSensingComp);
+	// }
 
 	
 }
@@ -162,10 +162,10 @@ void ARadishEnemy::Tick(float DeltaTime)
 void ARadishEnemy::OnSeePlayer(APawn* Pawn)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("i fucking see you"));
-	AIController->Possess(this);
-	// Use Ai controller to move to player
-	AIController->MoveToActor(Player, 100.f);
-	
+	// AIController->Possess(this);
+	// // Use Ai controller to move to player
+	// AIController->MoveToActor(Player, 100.f);
+	//
 	bHostile = true;
 
 }
