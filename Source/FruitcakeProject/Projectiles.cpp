@@ -2,6 +2,7 @@
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "PlayerCharacter.h"
 #include "Particles/ParticleSystem.h"
+#include "NiagaraComponent.h"
 #include "FlowerEnemy.h"
 #include "Particles/ParticleSystemComponent.h"
 
@@ -84,15 +85,13 @@ AProjectiles::AProjectiles()
 	}
 
 
-
-
-	if (!ProjectileParticleEffect)
+	if (!ProjectileParticleEffectN)
 	{
-		ProjectileParticleEffect = CreateDefaultSubobject<UParticleSystem>(TEXT("ParticleEffect"));
-		static ConstructorHelpers::FObjectFinder<UParticleSystem>Particle(TEXT("ParticleSystem'/Game/Fruitcake_Game/VFX/ProjectileEffect.ProjectileEffect'"));
-		if (Particle.Succeeded())
+		ProjectileParticleEffectN = CreateDefaultSubobject<UNiagaraSystem>(TEXT("ParticleEffectN"));
+		static ConstructorHelpers::FObjectFinder<UNiagaraSystem>ParticleN(TEXT("NiagaraSystem'/Game/Fruitcake_Game/VFX/ProjectileEffect_Converted.ProjectileEffect_Converted'"));
+		if (ParticleN.Succeeded())
 		{
-			ProjectileParticleEffect = Particle.Object;
+			ProjectileParticleEffectN = ParticleN.Object;
 		}
 	}
 
@@ -101,7 +100,11 @@ AProjectiles::AProjectiles()
 		PointLightComponent = CreateDefaultSubobject<UPointLightComponent>(TEXT("PointLight"));
 		PointLightComponent->SetupAttachment(RootComponent);
 	}
+}
 
+void AProjectiles::Kill()
+{
+	ParticleComponent->Deactivate();
 }
 
 // Called when the game starts or when spawned
@@ -111,17 +114,23 @@ void AProjectiles::BeginPlay()
 	Super::BeginPlay();
 
 	PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+	GetWorldTimerManager().SetTimer(KillTimerHandle, this, &AProjectiles::Kill, 1.49f, false);
 }
 
 // Called every frame
 void AProjectiles::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (ParticleComponent)
+	{
+		ParticleComponent->SetWorldLocation(GetActorLocation());
+	}
 }
 
 void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming, bool isPlayer)
 {
-	UParticleSystemComponent* Particle = UGameplayStatics::SpawnEmitterAttached(ProjectileParticleEffect, RootComponent);
+	ParticleComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ProjectileParticleEffectN, GetActorLocation());
 	// sets if projectile is coming from the player or not, used in collision checks
 	isPlayerProjectile = isPlayer;
 	if (!isPlayer)
@@ -133,7 +142,7 @@ void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming,
 		//Set VFX Colour to magenta
 		ProjectileMeshComponent->SetMaterial(0, ProjectileMaterialInstanceEnemy);
 		PointLightComponent->SetLightColor(FLinearColor(1.f, 0.f, 1.f, 1.f));
-		Particle->SetColorParameter(FName("ParticleColor"), FLinearColor(1, 0, 1));
+		ParticleComponent->SetNiagaraVariableVec3(FString("ColorParamater"), FVector(1, 0, 1));
 		// if set to homing, wait half a second before targeting enemy
 		GetWorldTimerManager().SetTimer(ProjectileTimerHandle, this, &AProjectiles::HomingOnTarget, .5f, false);
 	}
@@ -146,7 +155,7 @@ void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming,
 		//Set VFX Colour to cyan
 		ProjectileMeshComponent->SetMaterial(0, ProjectileMaterialInstancePlayer);
 		PointLightComponent->SetLightColor(FLinearColor(0.f, 1.f, 1.f, 1.f));
-		Particle->SetColorParameter(FName("ParticleColor"), FLinearColor(0, 1, 1));
+		ParticleComponent->SetNiagaraVariableVec3(FString("ColorParamater"), FVector(0, 1, 1));
 	}
 
 	
@@ -155,7 +164,6 @@ void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming,
 	ProjectileMovementComponent->Velocity = ShootDirection * ProjectileMovementComponent->InitialSpeed;
 
 	// Once projectile is fired, check to see if projectile was set to homing
-	UGameplayStatics::SpawnEmitterAttached(ProjectileParticleEffect, RootComponent);
 
 }
 
@@ -186,6 +194,7 @@ void AProjectiles::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 	
 	if (!isPlayerProjectile)
 	{
+		ParticleComponent->Deactivate();
 		Destroy();
 	}
 	
@@ -193,6 +202,7 @@ void AProjectiles::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 	// Player Projectile Collision Responses
 	if (isPlayerProjectile && !OtherActor->IsA(APlayerCharacter::StaticClass()) && OtherComp->GetCollisionProfileName() != FName("DoorButton") && OtherComp->GetCollisionProfileName() != FName("AICollision"))
 	{
+		ParticleComponent->Deactivate();
 		Destroy();
 	}
 }
@@ -203,5 +213,6 @@ void AProjectiles::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, 
 	{
 		PlayerCharacter->TakeDamage(1.f, FDamageEvent(), nullptr, this);
 	}
+	ParticleComponent->Deactivate();
 	Destroy();
 }
