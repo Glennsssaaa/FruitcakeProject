@@ -28,6 +28,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "PlayerProjectiles")
 	TSubclassOf<class AProjectiles> SpellClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Camera")
+	TSubclassOf<class UCameraShakeBase> ShakeClass;
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

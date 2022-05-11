@@ -26,6 +26,12 @@ APlayerCharacter::APlayerCharacter()
 	
 	SpellClass = AProjectiles::StaticClass();
 
+	/*static ConstructorHelpers::FObjectFinder<UCameraShakeBase>Shake(TEXT(""));
+	if (Shake.Succeeded())
+	{
+		ShakeClass = Shake.Object;
+	}*/
+
 	if(!Root)
 	{
 		Root = CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot"));
@@ -289,6 +295,9 @@ void APlayerCharacter::MeleeAttack()
 		return;
 	}
 
+	//play camera shake
+	GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(), ShakeClass, GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetTransform().GetLocation(), 0, 20, 1);
+
 	bCanMove = false;
 	bIsAttack = true;
 
@@ -336,6 +345,8 @@ void APlayerCharacter::CastProjectileMethod()
 
 			if (Projectile)
 			{
+				//play camera shake
+				GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(), ShakeClass, GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetTransform().GetLocation(), 0, 20, 1);
 				// Set the projectile's initial trajectory.
 				const FVector LaunchDirection = ProjectileLaunchDirection.Vector();
 				Projectile->FireInDirection(LaunchDirection, false, true);
