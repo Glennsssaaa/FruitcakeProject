@@ -49,7 +49,7 @@ protected:
 	bool bIsShooting;
 	
 	// Sphere collision component.
-	UPROPERTY(VisibleDefaultsOnly, Category = "FlowerEnemy")
+	UPROPERTY(BlueprintReadWrite, Category = "FlowerEnemy")
 	UBoxComponent* CollisionComponent;
 
 	// Sphere collision component.
