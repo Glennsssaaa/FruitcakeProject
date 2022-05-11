@@ -78,7 +78,7 @@ public:
 
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	bool CheckIfButtonIsBehindWall(UBoxComponent* box);
+	bool IsComponentBehindWall(UShapeComponent* box);
 
 	
 	void ResetProjectile();

@@ -357,23 +357,19 @@ void APlayerCharacter::CastProjectile()
 	
 }
 
-bool APlayerCharacter::CheckIfButtonIsBehindWall(UBoxComponent* box)
+bool APlayerCharacter::IsComponentBehindWall(UShapeComponent* box)
 {
 	// Line trace to box
-	
-	
-	
 	FHitResult Hit;
 	FVector Start = GetActorLocation();
 	FVector End = box->GetComponentLocation();
-	FVector End2 = FVector(End.X - 100, End.Y - 100, End.Z + 100);
 	FCollisionQueryParams CollisionParams;
 	CollisionParams.AddIgnoredActor(this);
 	if(GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, CollisionParams))
 	{
 		DrawDebugLine(GetWorld(), GetActorLocation(), box->GetComponentLocation(), FColor::Red, false, 1.0f, 0, 1.0f);
 		// If the line trace hit something, return true
-		if(Hit.GetComponent()->ComponentHasTag(FName(TEXT("Button"))))
+		if(Hit.GetComponent()->ComponentHasTag(FName(TEXT("MeleeCheckTag"))))
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("xtra good"));
 			return false;

@@ -63,7 +63,8 @@ void ARadishEnemy::BeginPlay()
 	bAttackDelayActive = false;
 	MovementSpeed = 20.f;
 	AttackRange->SetSphereRadius(300.f);
-	Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	// Cast to player
+	Player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	bJustDamaged = false;
 	AttackDelayTime = 0.6f;
 }
@@ -166,11 +167,16 @@ void ARadishEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 		return;
 	}
 	
-	if (OtherComp->ComponentHasTag(FName("PlayerAttack")) /* && PlayerCharacter->GetCanDamage() == true -- Note - Change */)
+	if (OtherComp->ComponentHasTag(FName("PlayerAttack")))
 	{
-		//PlayerCharacter->SetCanDamage();
+		if(Player->IsComponentBehindWall(CollisionComponent))
+		{
+			return;		
+		}
 		TakeDamage(1, FDamageEvent(), nullptr, this);
 		bStunned = true;
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Ow"));
+
 		GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ARadishEnemy::SetStunned, 0.3f, false, 0.3f);
 	}
 }

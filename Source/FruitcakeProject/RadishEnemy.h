@@ -55,7 +55,7 @@ public:
 protected:
 
 	UPROPERTY()
-	AActor* Player;
+	class APlayerCharacter* Player;
 	
 	// Sphere collision component.
 	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")

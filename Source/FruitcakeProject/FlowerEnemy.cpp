@@ -21,7 +21,6 @@ AFlowerEnemy::AFlowerEnemy()
 		// Set the root component to be newly created component.
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Enemy"));
 
-		RootComponent = CollisionComponent;
 	}
 	
 	CollisionComponent->SetCollisionProfileName(TEXT("Enemy"));
@@ -51,9 +50,6 @@ void AFlowerEnemy::Tick(float DeltaTime)
 	NewRotation.Pitch = 0.f;
 	NewRotation.Roll = 0.f;
 	SetActorRotation(NewRotation);
-
-	
-	
 }
 
 void AFlowerEnemy::CallFireAtPlayer()
@@ -123,13 +119,13 @@ void AFlowerEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 {
 	if (OtherComp->ComponentHasTag(FName("PlayerAttack")))
 	{
-		Destroy();
+		TakeDamage(1.f, FDamageEvent(), nullptr, this);
 	}
 
 	if (OtherComp->GetCollisionProfileName() == TEXT("PlayerAttack"))
 	{
 		OtherActor->Destroy();
-		Destroy();
+		TakeDamage(1.f, FDamageEvent(), nullptr, this);
 	}
 }
 
