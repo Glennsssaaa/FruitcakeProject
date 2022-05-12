@@ -84,6 +84,9 @@ protected:
 	// Set to true if enemy has been damaged, used in animation bp
 	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
 	bool bJustDamaged;
+
+	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
+	bool bIsDead;
 	
 	UPROPERTY(BlueprintReadWrite, Category = "RadishEnemy")
 	float MovementSpeed;

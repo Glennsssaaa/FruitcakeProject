@@ -48,6 +48,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bIsShooting;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsDead;
+
 	// Sphere collision component.
 	UPROPERTY(BlueprintReadWrite, Category = "FlowerEnemy")
 	UBoxComponent* CollisionComponent;

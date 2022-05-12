@@ -378,23 +378,17 @@ bool APlayerCharacter::IsComponentBehindWall(UShapeComponent* box)
 	CollisionParams.AddIgnoredActor(this);
 	if(GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, CollisionParams))
 	{
-		DrawDebugLine(GetWorld(), GetActorLocation(), box->GetComponentLocation(), FColor::Red, false, 1.0f, 0, 1.0f);
 		// If the line trace hit something, return true
 		if(Hit.GetComponent()->ComponentHasTag(FName(TEXT("MeleeCheckTag"))))
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("xtra good"));
 			return false;
 		}
 
 		if (Hit.bBlockingHit)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("bad"));
 			return true;
 		}
 	}
-	// Draw debug lines
-	DrawDebugLine(GetWorld(), GetActorLocation(), box->GetComponentLocation(), FColor::Red, false, 1.0f, 0, 1.0f);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("good"));
 	return false;
 }
 

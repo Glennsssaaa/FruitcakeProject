@@ -32,7 +32,7 @@ AFlowerEnemy::AFlowerEnemy()
 void AFlowerEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-
+	bIsDead = false;
 	PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	FlowerProjectiles = AProjectiles::StaticClass();
 
@@ -54,6 +54,11 @@ void AFlowerEnemy::Tick(float DeltaTime)
 
 void AFlowerEnemy::CallFireAtPlayer()
 {
+	if (bIsDead)
+	{
+		return;
+	}
+	
 	// Raycast to see if player is in sight
 	FHitResult HitResult;
 	FVector Start = GetActorLocation();
@@ -66,11 +71,12 @@ void AFlowerEnemy::CallFireAtPlayer()
 	{
 		return;
 	}
-
+	
 	if(HitResult.GetActor()->IsA(APlayerCharacter::StaticClass()) == false)
 	{
 		return;
 	}
+	
 	
 	bIsShooting = true;
 }
@@ -78,6 +84,10 @@ void AFlowerEnemy::CallFireAtPlayer()
 
 void AFlowerEnemy::FireAtPlayer()
 {
+	if (bIsDead)
+	{
+		return;
+	}
 	if (FlowerProjectiles)
 	{
 		FRotator CameraRotation;
@@ -85,11 +95,6 @@ void AFlowerEnemy::FireAtPlayer()
 
 
 		FVector SpawnLocation = FVector(ProjectileSpawnPoint.X, ProjectileSpawnPoint.Y, ProjectileSpawnPoint.Z);
-		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
-		MuzzleOffset.Set(100.0f, 40.0f, 0.0f);
-
-		// Transform MuzzleOffset from camera space to world space.
-	//	FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
 
 		// set rotation of projectile to camera rotation
 		FRotator MuzzleRotation = GetActorRotation();
@@ -103,6 +108,8 @@ void AFlowerEnemy::FireAtPlayer()
 			SpawnParams.Instigator = GetInstigator();
 
 			// Spawn the projectile at the muzzle.
+	
+			
 			AProjectiles* Projectile = World->SpawnActor<AProjectiles>(FlowerProjectiles, SpawnLocation, FRotator(0.f, 0.f, 0.f), SpawnParams);
 
 			if (Projectile)
@@ -119,13 +126,18 @@ void AFlowerEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 {
 	if (OtherComp->ComponentHasTag(FName("PlayerAttack")))
 	{
-		TakeDamage(1.f, FDamageEvent(), nullptr, this);
+
+			TakeDamage(1.f, FDamageEvent(), nullptr, this);
+		
 	}
+		
 
 	if (OtherComp->GetCollisionProfileName() == TEXT("PlayerAttack"))
 	{
 		OtherActor->Destroy();
-		TakeDamage(1.f, FDamageEvent(), nullptr, this);
+
+			TakeDamage(1.f, FDamageEvent(), nullptr, this);
+		
 	}
 }
 

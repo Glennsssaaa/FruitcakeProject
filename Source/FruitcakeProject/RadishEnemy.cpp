@@ -57,6 +57,7 @@ void ARadishEnemy::BeginPlay()
 	Super::BeginPlay();
 	
 	// Initialise hostile, stunned and attack bool
+	bIsDead = false;
 	bHostile = false;
 	bStunned = false;
 	bAttack = false;
@@ -232,6 +233,10 @@ void ARadishEnemy::CheckIfStillOverlapping()
 	// Checks if enemy attack range component is still overlapping with player, if so, attack again, with a delay of half a second
 	if (AttackRange->IsOverlappingActor(Player) && !bAttackDelayActive) 
 	{
+		if(bIsDead)
+		{
+			return;
+		}
 		bAttack = true;
 		bAttackDelayActive = true;
 		GetWorldTimerManager().SetTimer(AttackDelayTimerHandle, this, &ARadishEnemy::SetAttackDelayBool, 0.1f, false, 0.5f);
