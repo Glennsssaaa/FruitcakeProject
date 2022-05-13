@@ -144,56 +144,58 @@ void APlayerCharacter::BeginPlay()
 // Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
-	
-	if (!UKismetMathLibrary::NearlyEqual_FloatFloat(RotationAngle, TargetAngle, 100.f * DeltaTime))
-    {
-		CameraBoom->bEnableCameraLag = false;
-        float Rotation_Step = RotationSpeed * DeltaTime;
-        if (TargetAngle < RotationAngle)
-        {
-            Rotation_Step *= -1;
-        }
-   
-        RotationAngle += Rotation_Step;
-   
-        //Vector(X = cos(angle) * radius, Y = sin(angle) * radius, Z = height)
-        const FVector New_Offset = FVector(cosf(UKismetMathLibrary::DegreesToRadians(RotationAngle)) * CameraZoomValue, sinf(UKismetMathLibrary::DegreesToRadians(RotationAngle)) * CameraZoomValue, CameraZoomValue);
-        CameraBoom->TargetOffset = New_Offset;
-        CameraBoom->SetRelativeRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation() + New_Offset, GetActorLocation()));
-    }
-    else
-    {
-    	CameraBoom->bEnableCameraLag = true;
-        RotationAngle = TargetAngle;
-    }
+		Super::Tick(DeltaTime);
 
+		if (!UKismetMathLibrary::NearlyEqual_FloatFloat(RotationAngle, TargetAngle, 100.f * DeltaTime))
+		{
+			CameraBoom->bEnableCameraLag = false;
+			float Rotation_Step = RotationSpeed * DeltaTime;
+			if (TargetAngle < RotationAngle)
+			{
+				Rotation_Step *= -1;
+			}
+
+			RotationAngle += Rotation_Step;
+
+			//Vector(X = cos(angle) * radius, Y = sin(angle) * radius, Z = height)
+			const FVector New_Offset = FVector(cosf(UKismetMathLibrary::DegreesToRadians(RotationAngle)) * CameraZoomValue, sinf(UKismetMathLibrary::DegreesToRadians(RotationAngle)) * CameraZoomValue, CameraZoomValue);
+			CameraBoom->TargetOffset = New_Offset;
+			CameraBoom->SetRelativeRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation() + New_Offset, GetActorLocation()));
+		}
+		else
+		{
+			CameraBoom->bEnableCameraLag = true;
+			RotationAngle = TargetAngle;
+		}
+	
 
 }
 
 bool APlayerCharacter::ImprovedDashFunction()
 {
-	// get forward vector
-	bIsDashing = true;
-	PredictedLocation = (GetActorForwardVector() * DashDistance) + BaseLocation;
-	FHitResult SweepHitResult;
-	// set actor location using interpolation and check if there is any collision in the way
-//	SetActorLocation(FMath::VInterpTo(GetActorLocation(), PredictedLocation, GetWorld()->GetDeltaSeconds(), (DashSpeed)), true, &SweepHitResult);
-	CameraBoom->bEnableCameraLag = false;
+	if (bCanMove) {
+		// get forward vector
+		bIsDashing = true;
+		PredictedLocation = (GetActorForwardVector() * DashDistance) + BaseLocation;
+		FHitResult SweepHitResult;
+		// set actor location using interpolation and check if there is any collision in the way
+	//	SetActorLocation(FMath::VInterpTo(GetActorLocation(), PredictedLocation, GetWorld()->GetDeltaSeconds(), (DashSpeed)), true, &SweepHitResult);
+		CameraBoom->bEnableCameraLag = false;
 
-	SetActorLocation(FMath::Lerp(GetActorLocation(), PredictedLocation, GetWorld()->GetDeltaSeconds() * DashSpeed), true, &SweepHitResult);
-	
-	
-	const FVector2D ActorLocation2D = FVector2D(GetActorLocation().X, GetActorLocation().Y);
-	const FVector2D PredictedLocation2D = FVector2D(PredictedLocation.X, PredictedLocation.Y);
-	if (SweepHitResult.bBlockingHit || ActorLocation2D.Equals(PredictedLocation2D, 100.f))
-	{
-		EnableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-		GetWorld()->GetTimerManager().ClearTimer(DashTimer);
-		bIsDashing = false;
-		GetWorld()->GetTimerManager().SetTimer(DashCooldownTimer, this, &APlayerCharacter::DashCooldownFunction, DashCooldown, false);
-		CameraBoom->bEnableCameraLag = true;
-		return true;
+		SetActorLocation(FMath::Lerp(GetActorLocation(), PredictedLocation, GetWorld()->GetDeltaSeconds() * DashSpeed), true, &SweepHitResult);
+
+
+		const FVector2D ActorLocation2D = FVector2D(GetActorLocation().X, GetActorLocation().Y);
+		const FVector2D PredictedLocation2D = FVector2D(PredictedLocation.X, PredictedLocation.Y);
+		if (SweepHitResult.bBlockingHit || ActorLocation2D.Equals(PredictedLocation2D, 100.f))
+		{
+			EnableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+			GetWorld()->GetTimerManager().ClearTimer(DashTimer);
+			bIsDashing = false;
+			GetWorld()->GetTimerManager().SetTimer(DashCooldownTimer, this, &APlayerCharacter::DashCooldownFunction, DashCooldown, false);
+			CameraBoom->bEnableCameraLag = true;
+			return true;
+		}
 	}
 	return false;
 }
@@ -258,22 +260,26 @@ void APlayerCharacter::MoveRightMethod(float Value)
 
 void APlayerCharacter::TurnAtRateMethod(float Value)
 {
-	if(Value == 0)
-	{
-		return;
-	}
+	if (bCanMove) {
+		if(Value == 0)
+		{
+			return;
+		}
 	
-	AddControllerYawInput(Value *= GetWorld()->GetDeltaSeconds() * TurnRate);
+		AddControllerYawInput(Value *= GetWorld()->GetDeltaSeconds() * TurnRate);
+	}
 }
 
 void APlayerCharacter::LookUpRateMethod(float Value)
 {
-	if(Value == 0)
-	{
-		return;
+	if (bCanMove) {
+		if(Value == 0)
+		{
+			return;
+		}
+
+		AddControllerPitchInput(Value *= GetWorld()->GetDeltaSeconds() * LookRate);
 	}
-	
-	AddControllerPitchInput(Value *= GetWorld()->GetDeltaSeconds() * LookRate);
 }
 
 void APlayerCharacter::SwitchPerspectiveMethod(float value)

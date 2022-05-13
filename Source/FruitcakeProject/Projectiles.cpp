@@ -110,12 +110,12 @@ void AProjectiles::Kill()
 // Called when the game starts or when spawned
 void AProjectiles::BeginPlay()
 {
-	InitialLifeSpan = 1.5f;
+	InitialLifeSpan = .75f;
 	Super::BeginPlay();
 
 	PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
-	GetWorldTimerManager().SetTimer(KillTimerHandle, this, &AProjectiles::Kill, 1.49f, false);
+	GetWorldTimerManager().SetTimer(KillTimerHandle, this, &AProjectiles::Kill, 0.74f, false);
 }
 
 // Called every frame
