@@ -179,7 +179,6 @@ bool APlayerCharacter::ImprovedDashFunction()
 		PredictedLocation = (GetActorForwardVector() * DashDistance) + BaseLocation;
 		FHitResult SweepHitResult;
 		// set actor location using interpolation and check if there is any collision in the way
-	//	SetActorLocation(FMath::VInterpTo(GetActorLocation(), PredictedLocation, GetWorld()->GetDeltaSeconds(), (DashSpeed)), true, &SweepHitResult);
 		CameraBoom->bEnableCameraLag = false;
 
 		SetActorLocation(FMath::Lerp(GetActorLocation(), PredictedLocation, GetWorld()->GetDeltaSeconds() * DashSpeed), true, &SweepHitResult);
@@ -194,6 +193,7 @@ bool APlayerCharacter::ImprovedDashFunction()
 			bIsDashing = false;
 			GetWorld()->GetTimerManager().SetTimer(DashCooldownTimer, this, &APlayerCharacter::DashCooldownFunction, DashCooldown, false);
 			CameraBoom->bEnableCameraLag = true;
+			
 			return true;
 		}
 	}
@@ -332,6 +332,12 @@ void APlayerCharacter::MeleeAttackCooldown()
 
 void APlayerCharacter::CastProjectileMethod()
 {
+	// Check if player is falling
+	if(GetCharacterMovement()->IsFalling())
+	{
+		return;
+	}
+	
 	if (bCanCast)
 	{
 		const FVector SpawnLocation = FVector(ProjectileSpawnPoint.X, ProjectileSpawnPoint.Y, ProjectileSpawnPoint.Z);

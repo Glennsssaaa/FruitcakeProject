@@ -137,6 +137,7 @@ protected:
 	/* ------ Player Dash ------ */
 
 	// Can the player currently dash (are they already currently dashing)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bCanDash;
 	
 	// Dash Timer
@@ -173,7 +174,7 @@ protected:
 	FRotator ProjectileLaunchDirection;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool bCanMove = true;
+	bool bCanMove = true;
 	
 	/* ------ Player Camera ------ */
 

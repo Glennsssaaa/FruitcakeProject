@@ -114,7 +114,7 @@ void AProjectiles::BeginPlay()
 	Super::BeginPlay();
 
 	PlayerCharacter = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-
+	isPlayerProjectile = false;
 	GetWorldTimerManager().SetTimer(KillTimerHandle, this, &AProjectiles::Kill, 0.74f, false);
 }
 
@@ -183,6 +183,7 @@ void AProjectiles::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 {
 	if(OtherActor == nullptr || OtherComp == nullptr || OtherActor == this)
 	{
+		Destroy();
 		return;
 	}
 	
@@ -194,7 +195,7 @@ void AProjectiles::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 	
 	if (!isPlayerProjectile)
 	{
-		ParticleComponent->Deactivate();
+		//ParticleComponent->Deactivate();
 		Destroy();
 	}
 	
