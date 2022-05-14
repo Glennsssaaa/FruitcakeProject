@@ -125,6 +125,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
 	bool bIsSpellCast;
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation Variables")
+		bool bCanAim;
+
 	// Timer handle to handle projectile cooldown
 	FTimerHandle CastTimerHandle;
 	

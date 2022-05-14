@@ -123,7 +123,7 @@ void APlayerCharacter::BeginPlay()
 
 	// Spell Attacks
 	bCanCast = true;
-
+	bCanAim = true;
 	// Player look and turn rate
 	LookRate = 45.f;
 	TurnRate = 45.f;
@@ -335,11 +335,14 @@ void APlayerCharacter::CastProjectileMethod()
 	// Check if player is falling
 	if(GetCharacterMovement()->IsFalling())
 	{
+
 		return;
 	}
-	
+
+
 	if (bCanCast)
 	{
+
 		const FVector SpawnLocation = FVector(ProjectileSpawnPoint.X, ProjectileSpawnPoint.Y, ProjectileSpawnPoint.Z);
 
 		// set rotation of projectile to camera rotation
@@ -357,12 +360,13 @@ void APlayerCharacter::CastProjectileMethod()
 
 			if (Projectile)
 			{
+				bCanAim = false;
+				bCanCast = false;
 				//play camera shake
 				GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayWorldCameraShake(GetWorld(), ShakeClass, GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetTransform().GetLocation(), 0, 20, 1);
 				// Set the projectile's initial trajectory.
 				const FVector LaunchDirection = ProjectileLaunchDirection.Vector();
 				Projectile->FireInDirection(LaunchDirection, false, true);
-				bCanCast = false;
 				GetWorldTimerManager().SetTimer(CastTimerHandle, this, &APlayerCharacter::ResetProjectile, 1.f, false);
 			}
 
@@ -407,6 +411,7 @@ bool APlayerCharacter::IsComponentBehindWall(UShapeComponent* box)
 void APlayerCharacter::ResetProjectile()
 {
 	bCanCast = true;
+	bCanAim = true;
 }
 
 
