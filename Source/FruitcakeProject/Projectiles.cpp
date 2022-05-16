@@ -131,7 +131,7 @@ void AProjectiles::Tick(float DeltaTime)
 void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming, bool isPlayer)
 {
 	ParticleComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ProjectileParticleEffectN, GetActorLocation());
-	// sets if projectile is coming from the player or not, used in collision checks
+	// Sets if projectile is coming from the player or not, used in collision checks
 	isPlayerProjectile = isPlayer;
 	if (!isPlayer)
 	{
@@ -139,11 +139,11 @@ void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming,
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("EnemyProjectile"));
 		ProjectileMovementComponent->bIsHomingProjectile = true;
 		ProjectileMovementComponent->HomingTargetComponent = PlayerCharacter->GetRootComponent();
-		//Set VFX Colour to magenta
+		// Set VFX Colour to magenta
 		ProjectileMeshComponent->SetMaterial(0, ProjectileMaterialInstanceEnemy);
 		PointLightComponent->SetLightColor(FLinearColor(1.f, 0.f, 1.f, 1.f));
 		ParticleComponent->SetNiagaraVariableVec3(FString("ColorParamater"), FVector(1, 0, 1));
-		// if set to homing, wait half a second before targeting enemy
+		// If set to homing, wait half a second before targeting enemy
 		GetWorldTimerManager().SetTimer(ProjectileTimerHandle, this, &AProjectiles::HomingOnTarget, .5f, false);
 	}
 	else
@@ -152,7 +152,7 @@ void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming,
 		ProjectileMovementComponent->MaxSpeed = 2500.0f;
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("PlayerAttack"));
 		ProjectileMeshComponent->BodyInstance.SetCollisionProfileName(TEXT("PlayerAttack"));
-		//Set VFX Colour to cyan
+		// Set VFX Colour to cyan
 		ProjectileMeshComponent->SetMaterial(0, ProjectileMaterialInstancePlayer);
 		PointLightComponent->SetLightColor(FLinearColor(0.f, 1.f, 1.f, 1.f));
 		ParticleComponent->SetNiagaraVariableVec3(FString("ColorParamater"), FVector(0, 1, 1));
@@ -171,7 +171,7 @@ void AProjectiles::FireInDirection(const FVector& ShootDirection, bool isHoming,
 
 void AProjectiles::HomingOnTarget() const
 {
-	// sets target to enemy collision component
+	// Sets target to enemy collision component
 	ProjectileMovementComponent->bIsHomingProjectile = false;
 }
 

@@ -40,13 +40,13 @@ public:
 
 	// Function that is called when the projectile hits something.
 	UFUNCTION()
-		void OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-		void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 
 	UFUNCTION()
-		void Kill();
+	void Kill();
 	
 protected:
 	FTimerHandle ProjectileTimerHandle;
@@ -57,32 +57,32 @@ protected:
 
 	// Sphere Static Mesh
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
-		UStaticMeshComponent* ProjectileMeshComponent;
+	UStaticMeshComponent* ProjectileMeshComponent;
 
 	// Projectile materials
 	UPROPERTY(VisibleDefaultsOnly, Category = Movement)
-		UMaterialInstanceDynamic* ProjectileMaterialInstancePlayer;
+	UMaterialInstanceDynamic* ProjectileMaterialInstancePlayer;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = Movement)
-		UMaterialInstanceDynamic* ProjectileMaterialInstanceEnemy;
+	UMaterialInstanceDynamic* ProjectileMaterialInstanceEnemy;
 
 	// Sphere collision component.
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
-		USphereComponent* CollisionComponent;
+	USphereComponent* CollisionComponent;
 
 	// Projectile movement component.
 	UPROPERTY(VisibleAnywhere, Category = Movement)
-		UProjectileMovementComponent* ProjectileMovementComponent;
+	UProjectileMovementComponent* ProjectileMovementComponent;
 
 	UPROPERTY(VisibleAnywhere)
-		UNiagaraSystem* ProjectileParticleEffectN;
+	UNiagaraSystem* ProjectileParticleEffectN;
 
 	UPROPERTY(VisibleAnywhere)
-		UNiagaraComponent* ParticleComponent;
+	UNiagaraComponent* ParticleComponent;
 
 	//Point Light
 	UPROPERTY(VisibleAnywhere)
-		UPointLightComponent* PointLightComponent;
+	UPointLightComponent* PointLightComponent;
 
 	bool isPlayerProjectile; 
 };

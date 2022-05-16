@@ -17,7 +17,7 @@ AFlowerEnemy::AFlowerEnemy()
 		// Set Collision box to be sphere.
 		CollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
 		// Set collision box radius.
-		CollisionComponent->SetBoxExtent(FVector(90.f, 90.f, 90.f));
+		CollisionComponent->SetBoxExtent(FVector(90.f, 90.f, 140.f));
 		// Set the root component to be newly created component.
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Enemy"));
 

@@ -296,7 +296,7 @@ void APlayerCharacter::SwitchPerspectiveMethod(float value)
 void APlayerCharacter::MeleeAttack()
 {
 	// Check to make sure the player is able to move and if they are either currently dashing or attack, if so, immediately return from function
-	if(!bCanMove || bIsAttack)
+	if(bIsAttack)
 	{
 		return;
 	}
@@ -308,7 +308,7 @@ void APlayerCharacter::MeleeAttack()
 	bIsAttack = true;
 
 	// Set amount of time before player can perform another melee attack
-	MeleeCooldownTimer = 0.5f;
+	MeleeCooldownTimer = 0.75f;
 
 	// Get Forward Vector
 	const FRotator Rotation = GetActorRotation();
